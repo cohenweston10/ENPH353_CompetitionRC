@@ -1,0 +1,39 @@
+<launch>
+
+<!-- Launch old Adeept Robot URDF -->
+
+	<group ns="R1">
+		<param name="robot_description" command="$(find xacro)xacro '$(find fly_bot)/urdf/Kwad.xacro'" />
+		
+		<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-param robot_description -urdf -model Kwad" />
+		
+		<rosparam file="$(find fly_bot)/config/Kwad_control.yaml" command="load" ns="/Kwad" />
+		
+		<!--<node name="control_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="namespace=/Kwad
+		/Kwad/joint_state_controller
+		/Kwad/joint_fr_motor_controller
+		/Kwad/joint_fl_motor_controller
+		/Kwad/joint_bl_motor_controller
+		/Kwad/joint_br_motor_controller" />-->
+		
+		<node name="control_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--namespace=/Kwad joint_state_controller joint_motor_controller" />
+		
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+			<!--<remap from="/joint_states" to="/Kwad/joint_states" />-->		
+			<param name="publish_frequency" type="double" value="5.0" />
+		</node>
+	</group> 
+
+
+<!-- Launch new Robbie URDF -->
+	<group ns="B1">
+		<param name="tf_prefix" value="B1_tf" />
+		<include file="$(find robbie)/launch/robbie.launch">
+			<arg name="init_pose" value="-x 5.5 -y 2.5 -z 0.2 -R 0.0 -P 0.0 -Y -1.57" />
+			<arg name="robot_name"  value="B1" />
+		</include>
+		<!-- Add teleop_keyboard controller -->
+		<include file="$(find enph353_utils)/launch/desktop.launch"/>
+	</group>
+
+</launch>
