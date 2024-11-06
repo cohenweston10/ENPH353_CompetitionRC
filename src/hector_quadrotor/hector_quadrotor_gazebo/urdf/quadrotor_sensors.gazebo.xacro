@@ -29,7 +29,7 @@
             <gaussianNoise>0.1</gaussianNoise>
           </plugin>
 
-          <plugin name="quadrotor_magnetic_sim" filename="libhector_gazebo_ros_magnetic.so">
+          <!-- <plugin name="quadrotor_magnetic_sim" filename="libhector_gazebo_ros_magnetic.so">
             <updateRate>10.0</updateRate>
             <bodyName>base_link</bodyName>
             <frameId>$(arg base_link_frame)</frameId>
@@ -37,7 +37,7 @@
             <offset>0 0 0</offset>
             <drift>0.0 0.0 0.0</drift>
             <gaussianNoise>1.3e-2 1.3e-2 1.3e-2</gaussianNoise>
-          </plugin>
+          </plugin> -->
 
           <!-- <plugin name="quadrotor_gps_sim" filename="libhector_gazebo_ros_gps.so">
             <updateRate>4.0</updateRate>
