@@ -39,7 +39,7 @@
             <gaussianNoise>1.3e-2 1.3e-2 1.3e-2</gaussianNoise>
           </plugin>
 
-          <plugin name="quadrotor_gps_sim" filename="libhector_gazebo_ros_gps.so">
+          <!-- <plugin name="quadrotor_gps_sim" filename="libhector_gazebo_ros_gps.so">
             <updateRate>4.0</updateRate>
             <bodyName>base_link</bodyName>
             <frameId>$(arg base_link_frame)</frameId>
@@ -51,7 +51,7 @@
             <gaussianNoise>0.01 0.01 0.01</gaussianNoise>
             <velocityDrift>0 0 0</velocityDrift>
             <velocityGaussianNoise>0.05 0.05 0.05</velocityGaussianNoise>
-          </plugin>
+          </plugin> -->
 
           <plugin name="quadrotor_groundtruth_sim" filename="libgazebo_ros_p3d.so">
             <updateRate>100.0</updateRate>
