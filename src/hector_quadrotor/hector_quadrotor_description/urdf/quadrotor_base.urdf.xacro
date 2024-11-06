@@ -24,7 +24,7 @@
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_base.stl"/>
+          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_base_05.stl"/>
         </geometry>
       </collision>
     </link>
