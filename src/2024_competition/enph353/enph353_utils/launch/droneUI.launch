@@ -1,0 +1,16 @@
+<launch>
+    <!-- Launch the custom controller UI -->
+    <node pkg="hector_ui" type="ui_hector_quad.py" name="ui_hector_quad" output="screen" />
+
+    <!-- Launch rqt_image_view for the first image topic -->
+    <node pkg="rqt_image_view" type="rqt_image_view" name="image_view_1" args="/quad/front_cam/camera/image">
+        <param name="window_width" value="800"/>
+        <param name="window_height" value="600"/>
+    </node>
+
+    <!-- Launch rqt_image_view for the second image topic -->
+    <node pkg="rqt_image_view" type="rqt_image_view" name="image_view_2" args="/quad/downward_cam/down_camera/image">
+        <param name="window_width" value="640"/>
+        <param name="window_height" value="480"/>
+    </node>
+</launch>
