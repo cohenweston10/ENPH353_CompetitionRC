@@ -39,7 +39,7 @@ controller:
             k_p: 5.0
             k_i: 2.5
             k_d: 0.0
-            limit_output: 3.0
+            limit_output: 10.0
             time_constant: 0.1
         limits:
             load_factor: 1.5
