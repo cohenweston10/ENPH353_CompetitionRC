@@ -16,7 +16,7 @@ class CluePublisher:
         self.pub = rospy.Publisher('/score_tracker', String, queue_size=10)
 
         # Subscribe to the OCR output
-        rospy.Subscriber('/ocr/processed_strings', String, queue_size=10)
+        rospy.Subscriber('/verified_clues', String, queue_size=10)
 
 
     def start_comp(self):

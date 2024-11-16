@@ -17,10 +17,11 @@ def main():
     sign_reader = SignReader()
     sign_reader.start()
 
+    # TO BE TESTED #
     # Create an instance of the OCR class and display latest image
-    parser = OCRNode()
-    cv2.imshow("Sign", parser.latest_image)
-    cv2.waitKey(1)
+    # parser = OCRNode()
+    # cv2.imshow("Sign", parser.latest_image)
+    # cv2.waitKey(1)
 
 
 if __name__ == '__main__':
