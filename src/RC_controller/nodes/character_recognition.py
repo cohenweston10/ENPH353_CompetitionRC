@@ -39,18 +39,20 @@ class OCRNode:
 
         # Initialize ROS node, subscribers, and publisher
         rospy.init_node('ocr_node', anonymous=True)
-        rospy.Subscriber('/sign_reader/homography', Image, self._camera_callback)
+        rospy.Subscriber('/sign_reader/homography', Image, self._sign_reader_callback)
         rospy.Subscriber('/ocr/trigger', String, self._trigger_callback)
         self.result_publisher = rospy.Publisher('/ocr/processed_strings', String, queue_size=10)
 
         # State to control processing
         self.trigger_received = False
 
-    def _camera_callback(self, msg):
+    def _sign_reader_callback(self, msg):
         """
         Callback to update the latest image from the camera topic.
         """
-        self.latest_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        self.latest_image = self.bridge.imgmsg_to_cv2(msg, "mono8")
+        self.latest_image = np.expand_dims(self.latest_image, axis=-1)  # Shape becomes (height, width, 1)
+
 
     def _trigger_callback(self, msg):
         """
@@ -68,13 +70,12 @@ class OCRNode:
         return keras.models.load_model(model_path)
 
     @staticmethod
-    def convert_to_binary(img):
+    def convert_to_gray(img):
         """
-        Convert an image to binary.
+        Convert an image to grascale.
         """
         grayscale_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        _, binarized_img = cv2.threshold(grayscale_img, 128, 255, cv2.THRESH_BINARY)
-        return binarized_img
+        return grayscale_img
 
     def process_board(self, board):
         """
@@ -121,6 +122,7 @@ class OCRNode:
 
         return ''.join(top_string_chars), ''.join(bottom_string_chars)
 
+
     def process_and_publish(self):
         """
         Process the latest image, predict the characters, and publish the results.
@@ -129,13 +131,18 @@ class OCRNode:
             rospy.logwarn("No image available for processing.")
             return
 
+        # Generate the top and bottom strings
         top_string, bottom_string = self.read_clue(self.latest_image)
-        result = f"Top: {top_string} | Bottom: {bottom_string}"
+
+        # Create a list of strings to publish
+        result = [top_string, bottom_string]
+
+        # Publish the array
         rospy.loginfo("Publishing result: %s", result)
+        self.result_publisher.publish(String(data=str(result)))  # Convert list to a string
 
-        self.result_publisher.publish(result)
 
-    def spin(self):
+    def start(self):
         """
         Start the ROS event loop.
         """
@@ -143,6 +150,6 @@ class OCRNode:
 
 
 if __name__ == "__main__":
-    ocr_node = OCRNode('./testmodel2.keras')
+    ocr_node = OCRNode('./testmodel3.keras')
     rospy.loginfo("OCR Node Initialized.")
-    ocr_node.spin()
+    ocr_node.start()
