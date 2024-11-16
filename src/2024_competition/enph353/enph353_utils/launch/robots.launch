@@ -36,7 +36,7 @@
 			<arg name="use_pose_estimation" value="$(arg use_pose_estimation)"/>
 		</include>
 		<!-- Add teleop_keyboard controller -->
-		<include file="$(find enph353_utils)/launch/droneUI.launch"/>
+		<include file="$(find RC_controller)/launch/droneUI.launch"/>
     </group>	
 
 

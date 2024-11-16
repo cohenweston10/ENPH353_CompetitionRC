@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 from std_msgs.msg import String
+from std_msgs.msg import Int8
 import ast
 
 class ClueVerifier:
@@ -17,7 +18,7 @@ class ClueVerifier:
         self.pub_score = rospy.Publisher('/verified_clues', String, queue_size=10)
 
         # Initialize the publisher for clue count topic
-        self.pub_count = rospy.Publisher('/clue_count', Int, queue_size=10)
+        self.pub_count = rospy.Publisher('/clue_count', Int8, queue_size=10)
 
         # Subscribe to the OCR output
         rospy.Subscriber('/ocr/processed_strings', String, self.callback)
@@ -45,4 +46,5 @@ class ClueVerifier:
 if __name__ == '__main__':
     # Create an instance of the ClueVerifier class
     clue_verifier = ClueVerifier()
+    rospy.loginfo("Clue Publisher Node Initialized.")
     clue_verifier.start()

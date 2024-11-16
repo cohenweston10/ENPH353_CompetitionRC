@@ -98,4 +98,5 @@ class SignReader:
 if __name__ == '__main__':
     # Create an instance of the SignReader class and start it
     sign_reader = SignReader()
+    rospy.loginfo("Sign Reader Node Initialized.")
     sign_reader.start()
