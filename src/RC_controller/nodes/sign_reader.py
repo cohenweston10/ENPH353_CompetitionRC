@@ -29,9 +29,6 @@ class SignReader:
         # Convert image to grayscale
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
-        # Convert image to black and white
-        _, bw_image = cv2.threshold(gray, 75, 255, cv2.THRESH_BINARY)
-
         # Detect SIFT features (keypoints) and descriptors for the camera image
         keypoints, descriptors = self.sift.detectAndCompute(gray, None)
 
@@ -67,7 +64,8 @@ class SignReader:
             # Only proceed if the matrix is valid
             if matrix is not None:
                 # Warp the region in the camera image to match the reference image perspective
-                rectified_sign = cv2.warpPerspective(bw_image, matrix, (ref_w, ref_h))
+                rectified_sign = cv2.warpPerspective(gray, matrix, (ref_w, ref_h))
+
                 return rectified_sign  # Output rectified image
 
         return None  # If no rectified image can be computed
@@ -89,6 +87,7 @@ class SignReader:
                 rectified_img_msg = self.bridge.cv2_to_imgmsg(rectified_sign, encoding="mono8")
                 self.pub.publish(rectified_img_msg)
 
+                # uncomment to display transformed sign for debugging purspose 
                 cv2.imshow("Rectified Sign", rectified_sign)
                 cv2.waitKey(1)
 

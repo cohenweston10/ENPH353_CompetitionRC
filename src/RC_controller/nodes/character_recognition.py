@@ -11,12 +11,15 @@ from tensorflow import keras
 
 
 class OCRNode:
-    def __init__(self, model_path):
+    def __init__(self):
         """
         Initialize the OCRNode.
         Args:
             model_path: Path to the trained model.
         """
+
+        model_path = " "
+
         self.PLATE_HEIGHT = 400
         self.PLATE_WIDTH = 600
 
