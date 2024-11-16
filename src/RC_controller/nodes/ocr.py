@@ -8,6 +8,7 @@ from std_msgs.msg import String
 from cv_bridge import CvBridge
 from tensorflow.keras import models, layers
 from tensorflow import keras
+import os
 
 
 class OCRNode:
@@ -18,7 +19,7 @@ class OCRNode:
             model_path: Path to the trained model.
         """
 
-        model_path = " "
+        model_path = os.path.dirname(os.path.realpath(__file__)) + "/testmodel3.keras"
 
         self.PLATE_HEIGHT = 400
         self.PLATE_WIDTH = 600
@@ -150,6 +151,6 @@ class OCRNode:
 
 
 if __name__ == "__main__":
-    ocr_node = OCRNode('./testmodel3.keras')
+    ocr_node = OCRNode()
     rospy.loginfo("OCR Node Initialized.")
     ocr_node.start()

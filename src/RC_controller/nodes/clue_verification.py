@@ -39,4 +39,5 @@ class ClueVerifier:
 if __name__ == '__main__':
     # Create an instance of the ClueVerifier class
     clue_verifier = ClueVerifier()
+    rospy.loginfo("Clue Publisher Node Initialized.")
     clue_verifier.start()

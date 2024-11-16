@@ -17,14 +17,14 @@ from clue_publisher import CluePublisher
 def main():
     # Create an instance of the SignReader class and start it
     sign_reader = SignReader()
-    sign_reader.start()
+    #sign_reader.start()
 
     # TO BE TESTED #
     # Create an instance of the OCR class and display latest image
     parser = OCRNode()
-    parser.start()
-    cv2.imshow("Sign", parser.latest_image)
-    cv2.waitKey(1)
+    # parser.start()
+    # cv2.imshow("Sign", parser.latest_image)
+    # cv2.waitKey(1)
 
 
 
