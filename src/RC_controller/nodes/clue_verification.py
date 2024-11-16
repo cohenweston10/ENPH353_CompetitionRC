@@ -14,7 +14,10 @@ class ClueVerifier:
         rospy.init_node('clue_verifier', anonymous=True)
 
         # Initialize the publisher for score tracker topic
-        self.pub = rospy.Publisher('/verified_clues', String, queue_size=10)
+        self.pub_score = rospy.Publisher('/verified_clues', String, queue_size=10)
+
+        # Initialize the publisher for clue count topic
+        self.pub_count = rospy.Publisher('/clue_count', Int, queue_size=10)
 
         # Subscribe to the OCR output
         rospy.Subscriber('/ocr/processed_strings', String, self.callback)
@@ -25,12 +28,15 @@ class ClueVerifier:
         }
 
         self.publish_count = 0
+        self.pub_count.publish(self.publish_count)
+
 
     def callback(self, clue):
         clues = ast.literal_eval(clue.data)
         if clues[0] == self.ClueToNum.get(self.publish_count + 1):
-            self.pub.publish(clues[1])
+            self.pub_score.publish(clues[1])
             self.publish_count += 1
+            self.pub_count.publish(self.publish_count)
 
     def start(self):
         # Start the ROS loop

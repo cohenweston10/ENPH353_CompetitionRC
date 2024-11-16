@@ -3,31 +3,23 @@
 import rospy
 import cv2
 import sys
-import os
-
-# Add the path to the 'nodes' directory where sign_reader.py is located
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'nodes'))
-
 from sensor_msgs.msg import Image
-from sign_reader import SignReader
-from character_recognition import OCRNode
-from clue_verification import ClueVerifier
-from clue_publisher import CluePublisher
 
-def main():
-    # Create an instance of the SignReader class and start it
-    sign_reader = SignReader()
-    sign_reader.start()
+class CompProtocol:
+    def __init__(self):
+        rospy.init_node('competition_protocol_node')
+        self.pub = rospy.Publisher('/state', String, queue_size=10)
+        rospy.Subscriber('/clue_count', Int, self.clue_count_callback)
 
-    # TO BE TESTED #
-    # Create an instance of the OCR class and display latest image
-    parser = OCRNode()
-    parser.start()
-    cv2.imshow("Sign", parser.latest_image)
-    cv2.waitKey(1)
+        self.clue_count = 0
 
+    def clue_count_callback(self, count):
+        self.clue_count = count
 
+    def run(self):
+        self.pub.publish("STARTUP")
 
 
 if __name__ == '__main__':
-    main()
+    comp_protocol = CompProtocol()
+    comp_protocol.run()
