@@ -40,16 +40,21 @@ class OCRNode:
 
         # Initialize ROS node, subscribers, and publisher
         rospy.init_node('ocr_node', anonymous=True)
-        rospy.Subscriber('/sign_reader/homography', Image, self._sign_reader_callback)
+        rospy.Subscriber('/signreader/homography', Image, self._sign_reader_callback)
         self.result_publisher = rospy.Publisher('/ocr/processed_strings', String, queue_size=10)
 
     def _sign_reader_callback(self, msg):
-        """
-        Callback to update the latest image from the camera topic.
-        """
-        self.latest_image = self.bridge.imgmsg_to_cv2(msg, "mono8")
-        self.latest_image = np.expand_dims(self.latest_image, axis=-1)  # Shape becomes (height, width, 1)
-        self.process_and_publish()
+        #rospy.loginfo("Image received")
+        try:
+            self.latest_image = self.bridge.imgmsg_to_cv2(msg, "mono8")
+            self.latest_image = np.expand_dims(self.latest_image, axis=-1)
+
+            # cv2.imshow("image", self.latest_image)
+            # cv2.waitKey(1)
+
+            self.process_and_publish()
+        except Exception as e:
+            rospy.logerr(f"Error in callback: {e}")
 
     def _load_model(self, model_path):
         """
@@ -105,8 +110,10 @@ class OCRNode:
         top_string_chars = [self.find_actual_char(pred) for pred in top_string]
         bottom_string_chars = [self.find_actual_char(pred) for pred in bottom_string]
 
-        rospy.loginfo("Top String: %s", ''.join(top_string_chars))
-        rospy.loginfo("Bottom String: %s", ''.join(bottom_string_chars))
+        rospy.loginfo(top_string_chars)
+
+        # rospy.loginfo("Top String: %s", ''.join(top_string_chars))
+        # rospy.loginfo("Bottom String: %s", ''.join(bottom_string_chars))
 
         return ''.join(top_string_chars), ''.join(bottom_string_chars)
 
@@ -126,7 +133,7 @@ class OCRNode:
         result = [top_string, bottom_string]
 
         # Publish the array
-        rospy.loginfo("Publishing result: %s", result)
+        #rospy.loginfo("Publishing result: %s", result)
         self.result_publisher.publish(String(data=str(result)))  # Convert list to a string
 
 
