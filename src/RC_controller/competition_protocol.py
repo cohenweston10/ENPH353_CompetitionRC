@@ -22,6 +22,7 @@ def main():
     # TO BE TESTED #
     # Create an instance of the OCR class and display latest image
     parser = OCRNode()
+    parser.start()
     cv2.imshow("Sign", parser.latest_image)
     cv2.waitKey(1)
 

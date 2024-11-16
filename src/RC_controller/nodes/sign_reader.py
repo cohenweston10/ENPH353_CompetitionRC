@@ -88,8 +88,8 @@ class SignReader:
                 self.pub.publish(rectified_img_msg)
 
                 # uncomment to display transformed sign for debugging purspose 
-                cv2.imshow("Rectified Sign", rectified_sign)
-                cv2.waitKey(1)
+                # cv2.imshow("Rectified Sign", rectified_sign)
+                # cv2.waitKey(1)
 
     def start(self):
         # Start the ROS loop

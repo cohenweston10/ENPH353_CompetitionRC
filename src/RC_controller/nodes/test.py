@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 
 # Get the absolute path to the model file
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__)) + "/"
-model_path = SCRIPT_PATH + "testmodel2.keras"
+model_path = SCRIPT_PATH + "testmodel3.keras"
 
 # Try loading the model
 try:
