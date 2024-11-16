@@ -40,11 +40,7 @@ class OCRNode:
         # Initialize ROS node, subscribers, and publisher
         rospy.init_node('ocr_node', anonymous=True)
         rospy.Subscriber('/sign_reader/homography', Image, self._sign_reader_callback)
-        rospy.Subscriber('/ocr/trigger', String, self._trigger_callback)
         self.result_publisher = rospy.Publisher('/ocr/processed_strings', String, queue_size=10)
-
-        # State to control processing
-        self.trigger_received = False
 
     def _sign_reader_callback(self, msg):
         """
@@ -52,16 +48,7 @@ class OCRNode:
         """
         self.latest_image = self.bridge.imgmsg_to_cv2(msg, "mono8")
         self.latest_image = np.expand_dims(self.latest_image, axis=-1)  # Shape becomes (height, width, 1)
-
-
-    def _trigger_callback(self, msg):
-        """
-        Callback to handle OCR trigger commands.
-        """
-        if msg.data.lower() == "process":
-            self.trigger_received = True
-            rospy.loginfo("OCR trigger received. Processing the latest image.")
-            self.process_and_publish()
+        self.process_and_publish()
 
     def _load_model(self, model_path):
         """
