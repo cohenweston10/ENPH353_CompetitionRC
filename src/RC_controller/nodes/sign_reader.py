@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 from std_msgs.msg import String
+import os
 
 class SignReader:
     def __init__(self):
@@ -83,13 +84,26 @@ class SignReader:
             # Call the read_sign method to process the image
             rectified_sign = self.read_sign(cv_image)
             if rectified_sign is not None:
+
                 # Publish the rectified image
                 rectified_img_msg = self.bridge.cv2_to_imgmsg(rectified_sign, encoding="mono8")
                 self.pub.publish(rectified_img_msg)
 
+                # Save the rectified image as a PNG
+                save_directory = os.path.dirname(os.path.realpath(__file__)) + "/exports"
+                if not os.path.exists(save_directory):
+                    os.makedirs(save_directory)
+                filename = os.path.join(save_directory, f"rectified_sign_{self.frame_counter}.png")
+                success = cv2.imwrite(filename, rectified_sign)
+
+                if success:
+                    rospy.loginfo(f"Image successfully saved as {filename}")
+                else:
+                    rospy.logerr(f"Failed to save image as {filename}")
+
                 # uncomment to display transformed sign for debugging purspose 
-                # cv2.imshow("Rectified Sign", rectified_sign)
-                # cv2.waitKey(1)
+                cv2.imshow("Rectified Sign", rectified_sign)
+                cv2.waitKey(1)
 
     def start(self):
         # Start the ROS loop

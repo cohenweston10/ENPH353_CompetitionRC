@@ -15,10 +15,7 @@ class OCRNode:
     def __init__(self):
         """
         Initialize the OCRNode.
-        Args:
-            model_path: Path to the trained model.
         """
-
         model_path = os.path.dirname(os.path.realpath(__file__)) + "/testmodel3.keras"
 
         self.PLATE_HEIGHT = 400
@@ -44,13 +41,16 @@ class OCRNode:
         self.result_publisher = rospy.Publisher('/ocr/processed_strings', String, queue_size=10)
 
     def _sign_reader_callback(self, msg):
-        #rospy.loginfo("Image received")
+        """
+        Callback for receiving images and processing them.
+        """
         try:
             self.latest_image = self.bridge.imgmsg_to_cv2(msg, "mono8")
             self.latest_image = np.expand_dims(self.latest_image, axis=-1)
 
-            # cv2.imshow("image", self.latest_image)
-            # cv2.waitKey(1)
+            # Display the received image
+            cv2.imshow("Received Image", self.latest_image)
+            cv2.waitKey(1)
 
             self.process_and_publish()
         except Exception as e:
@@ -61,14 +61,6 @@ class OCRNode:
         Load the trained OCR model.
         """
         return keras.models.load_model(model_path)
-
-    @staticmethod
-    def convert_to_gray(img):
-        """
-        Convert an image to grascale.
-        """
-        grayscale_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        return grayscale_img
 
     def process_board(self, board):
         """
@@ -86,7 +78,7 @@ class OCRNode:
                             self.bottomx + self.char_width * i:self.bottomx + self.char_width * (i + 1)]
             bottom_chars.append(char_im)
 
-        return np.array(top_chars, dtype=np.float32), np.array(bottom_chars, dtype=np.float32)
+        return top_chars, bottom_chars
 
     @staticmethod
     def find_actual_char(predictions):
@@ -101,19 +93,41 @@ class OCRNode:
         """
         Process the board and predict the characters on it.
         """
-        board = np.array(board)
-        top, bottom = self.process_board(board)
+        np_current_board = np.array(board)
 
-        top_string = self.model.predict(top)
-        bottom_string = self.model.predict(bottom)
+        # Process the board to extract top and bottom character regions
+        test_top, test_bottom = self.process_board(np_current_board)
 
-        top_string_chars = [self.find_actual_char(pred) for pred in top_string]
-        bottom_string_chars = [self.find_actual_char(pred) for pred in bottom_string]
+        # Debug: Display the extracted regions
+        for idx, char_img in enumerate(test_top):
+            cv2.imshow(f"Top Character {idx+1}", char_img.squeeze())
+        for idx, char_img in enumerate(test_bottom):
+            cv2.imshow(f"Bottom Character {idx+1}", char_img.squeeze())
+        cv2.waitKey(1)
 
-        rospy.loginfo(top_string_chars)
+        # Convert to NumPy arrays for prediction
+        test_top_np = np.array(test_top, dtype=np.float32) / 255.0
+        test_bottom_np = np.array(test_bottom, dtype=np.float32) / 255.0
 
-        # rospy.loginfo("Top String: %s", ''.join(top_string_chars))
-        # rospy.loginfo("Bottom String: %s", ''.join(bottom_string_chars))
+        # Debug: Log shapes and first elements
+        # rospy.loginfo(f"Top Characters Shape: {test_top_np.shape}")
+        # rospy.loginfo(f"Bottom Characters Shape: {test_bottom_np.shape}")
+
+        # Predict characters
+        top_string = self.model.predict(test_top_np)
+        bottom_string = self.model.predict(test_bottom_np)
+
+        # Debug: Log raw predictions
+        # rospy.loginfo(f"Top Predictions: {top_string}")
+        # rospy.loginfo(f"Bottom Predictions: {bottom_string}")
+
+        # Map predictions to actual characters
+        top_string_chars = [self.find_actual_char(element) for element in top_string]
+        bottom_string_chars = [self.find_actual_char(element) for element in bottom_string]
+
+        # Debug: Log the results
+        rospy.loginfo("Mapped Top String: %s", ''.join(top_string_chars))
+        rospy.loginfo("Mapped Bottom String: %s", ''.join(bottom_string_chars))
 
         return ''.join(top_string_chars), ''.join(bottom_string_chars)
 
@@ -129,13 +143,16 @@ class OCRNode:
         # Generate the top and bottom strings
         top_string, bottom_string = self.read_clue(self.latest_image)
 
+        
+
         # Create a list of strings to publish
         result = [top_string, bottom_string]
 
-        # Publish the array
-        #rospy.loginfo("Publishing result: %s", result)
-        self.result_publisher.publish(String(data=str(result)))  # Convert list to a string
+        # Debug: Log the published result
+        rospy.loginfo("Publishing result: %s", result)
 
+        # Publish the array
+        self.result_publisher.publish(String(data=str(result)))
 
     def start(self):
         """
