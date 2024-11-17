@@ -9,6 +9,7 @@ from cv_bridge import CvBridge
 from tensorflow.keras import models, layers
 from tensorflow import keras
 import os
+from collections import Counter
 
 
 class OCRNode:
@@ -16,18 +17,15 @@ class OCRNode:
         """
         Initialize the OCRNode.
         """
-        model_path = os.path.dirname(os.path.realpath(__file__)) + "/testmodel3.keras"
+        model_path = os.path.dirname(os.path.realpath(__file__)) + "/letsgo.keras"
 
         self.PLATE_HEIGHT = 400
         self.PLATE_WIDTH = 600
 
-        self.topy = 42
-        self.topx = 250
-        self.bottomy = 263
-        self.bottomx = 30
-
         self.char_width = 45
         self.char_height = 70
+
+        self.padding = 3
 
         self.bridge = CvBridge()
         self.latest_image = None
@@ -64,28 +62,93 @@ class OCRNode:
 
     def process_board(self, board):
         """
-        Extract character regions from the board image.
+        Dynamically extract character regions from the board image, while filtering out non-character regions like graphics.
         """
-        top_chars, bottom_chars = [], []
+        # Convert the board to grayscale if it's not already
+        if board.ndim == 3 and board.shape[2] == 3:  
+            board = cv2.cvtColor(board, cv2.COLOR_BGR2GRAY)
 
-        for j in range(7):
-            char_im = board[self.topy:self.topy + self.char_height,
-                            self.topx + self.char_width * j:self.topx + self.char_width * (j + 1)]
-            top_chars.append(char_im)
+        # Normalize the board and convert to uint8 for processing
+        board = board.astype(np.float32) / 255.0
+        board_uint8 = (board * 255).astype(np.uint8)
 
-        for i in range(12):
-            char_im = board[self.bottomy:self.bottomy + self.char_height,
-                            self.bottomx + self.char_width * i:self.bottomx + self.char_width * (i + 1)]
-            bottom_chars.append(char_im)
+        # Determine the dominant background color
+        flat_pixels = board_uint8.flatten()
+        background_color = int(Counter(flat_pixels).most_common(1)[0][0])  # Most frequent pixel value
+
+        # Threshold the image to isolate characters
+        _, binary = cv2.threshold(board_uint8, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        # Mask the known graphic region (update coordinates as needed)
+        mask = np.ones(binary.shape, dtype=np.uint8) * 255
+        graphic_region = (0, 140, 0, 180)  # Replace with actual region of the graphic
+        cv2.rectangle(mask, (graphic_region[0], graphic_region[1]), (graphic_region[2], graphic_region[3]), 0, -1)
+        binary = cv2.bitwise_and(binary, binary, mask=mask)
+
+        # Perform morphological operations to clean up noise
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        binary_cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+
+        # Find contours of the characters
+        contours, _ = cv2.findContours(binary_cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # Sort contours by position (top-to-bottom, left-to-right)
+        bounding_boxes = [cv2.boundingRect(c) for c in contours]
+        bounding_boxes = sorted(bounding_boxes, key=lambda b: (b[1], b[0]))  # Sort by y first, then x
+
+        # Separate top and bottom rows based on their y-coordinates
+        row_threshold = board.shape[0] // 2  # Split roughly in half vertically
+        top_row_boxes = []
+        bottom_row_boxes = []
+
+        for box in bounding_boxes:
+            x, y, w, h = box
+            if h < 20 or w < 10:  # Skip very small boxes (likely noise)
+                continue
+            if w > self.char_width * 2 or h > self.char_height * 2:  # Skip large contours
+                continue
+            aspect_ratio = w / h
+            if aspect_ratio < 0.2 or aspect_ratio > 1.5:  # Skip non-character shapes
+                continue
+            if y < row_threshold:
+                top_row_boxes.append(box)
+            else:
+                bottom_row_boxes.append(box)
+
+        # Sort each row by x-coordinate
+        top_row_boxes = sorted(top_row_boxes, key=lambda b: b[0])
+        bottom_row_boxes = sorted(bottom_row_boxes, key=lambda b: b[0])
+
+        # Extract and preprocess characters
+        def extract_characters(row_boxes):
+            chars = []
+            for x, y, w, h in row_boxes:
+                char_im = board_uint8[y:y + h, x:x + w]
+                # Add padding around the character
+                char_im = cv2.copyMakeBorder(
+                    char_im,
+                    top=self.padding, bottom=self.padding, left=self.padding, right=self.padding,
+                    borderType=cv2.BORDER_CONSTANT,
+                    value=background_color  # Use dynamically determined background color
+                )
+                # Resize to target dimensions
+                char_im = cv2.resize(char_im, (self.char_width, self.char_height), interpolation=cv2.INTER_AREA)
+                chars.append(char_im)
+            return chars
+
+        # Process top and bottom rows
+        top_chars = extract_characters(top_row_boxes)
+        bottom_chars = extract_characters(bottom_row_boxes)
 
         return top_chars, bottom_chars
+
 
     @staticmethod
     def find_actual_char(predictions):
         """
         Finds the actual character based on the model's predictions.
         """
-        characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
+        characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         index = np.argmax(predictions)
         return characters[index]
 
@@ -99,11 +162,11 @@ class OCRNode:
         test_top, test_bottom = self.process_board(np_current_board)
 
         # Debug: Display the extracted regions
-        for idx, char_img in enumerate(test_top):
-            cv2.imshow(f"Top Character {idx+1}", char_img.squeeze())
-        for idx, char_img in enumerate(test_bottom):
-            cv2.imshow(f"Bottom Character {idx+1}", char_img.squeeze())
-        cv2.waitKey(1)
+        # for idx, char_img in enumerate(test_top):
+        #     cv2.imshow(f"Top Character {idx+1}", char_img.squeeze())
+        # for idx, char_img in enumerate(test_bottom):
+        #     cv2.imshow(f"Bottom Character {idx+1}", char_img.squeeze())
+        # cv2.waitKey(1)
 
         # Convert to NumPy arrays for prediction
         test_top_np = np.array(test_top, dtype=np.float32) / 255.0
@@ -126,8 +189,8 @@ class OCRNode:
         bottom_string_chars = [self.find_actual_char(element) for element in bottom_string]
 
         # Debug: Log the results
-        rospy.loginfo("Mapped Top String: %s", ''.join(top_string_chars))
-        rospy.loginfo("Mapped Bottom String: %s", ''.join(bottom_string_chars))
+        # rospy.loginfo("Mapped Top String: %s", ''.join(top_string_chars))
+        # rospy.loginfo("Mapped Bottom String: %s", ''.join(bottom_string_chars))
 
         return ''.join(top_string_chars), ''.join(bottom_string_chars)
 

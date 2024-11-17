@@ -17,9 +17,9 @@
          output="screen">
    </node>
 
-   	<!-- <node pkg="RC_controller"
+   	<node pkg="RC_controller"
          type="ocr.py"
          name="ocr" 
          output="screen">
-   </node> -->
+   </node>
 </launch>

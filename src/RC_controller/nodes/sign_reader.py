@@ -93,13 +93,6 @@ class SignReader:
                 save_directory = os.path.dirname(os.path.realpath(__file__)) + "/exports"
                 if not os.path.exists(save_directory):
                     os.makedirs(save_directory)
-                filename = os.path.join(save_directory, f"rectified_sign_{self.frame_counter}.png")
-                success = cv2.imwrite(filename, rectified_sign)
-
-                if success:
-                    rospy.loginfo(f"Image successfully saved as {filename}")
-                else:
-                    rospy.logerr(f"Failed to save image as {filename}")
 
                 # uncomment to display transformed sign for debugging purspose 
                 cv2.imshow("Rectified Sign", rectified_sign)
