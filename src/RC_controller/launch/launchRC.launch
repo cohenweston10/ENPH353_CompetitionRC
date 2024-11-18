@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="RC_controller"
+      <node pkg="RC_controller"
          type="sign_reader.py"
          name="sign_reader" 
          output="screen">

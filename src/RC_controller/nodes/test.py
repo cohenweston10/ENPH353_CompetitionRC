@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 
 # Get the absolute path to the model file
@@ -13,3 +14,5 @@ try:
     print("Model loaded successfully.")
 except Exception as e:
     print(f"Error loading model: {e}")
+
+print(tf.__version__)
