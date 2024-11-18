@@ -35,7 +35,7 @@ class CluePublisher:
         self.pub.publish(str('TeamRC,funky,-1,END'))
 
     def submit_clue(self, clue, answer):
-        number = str(clue)
+        number = str(clue) + 1
         answer = str(answer)
         self.pub.publish(f'TeamRC,funky,{number},{answer}')
 

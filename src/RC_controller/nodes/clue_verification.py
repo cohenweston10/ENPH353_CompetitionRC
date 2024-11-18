@@ -24,8 +24,8 @@ class ClueVerifier:
         rospy.Subscriber('/ocr/processed_strings', String, self.callback)
 
         self.ClueToNum = {
-            1: "SIZE", 2: "VICTIM", 3: "CRIME", 4: "TIME",
-            5: "PLACE", 6: "MOTIVE", 7: "WEAPON", 8: "BANDIT"
+            "SIZE": 1, "VICTIM": 2, "CRIME": 3, "TIME": 4,
+            "PLACE": 5, "MOTIVE": 6, "WEAPON": 7, "BANDIT": 8
         }
 
         self.publish_count = 0
@@ -34,7 +34,7 @@ class ClueVerifier:
 
     def callback(self, clue):
         clues = ast.literal_eval(clue.data)
-        if clues[0] == self.ClueToNum.get(self.publish_count + 1):
+        if self.ClueToNum.get(clues[0]) == self.publish_count + 1:
             self.pub_score.publish(clues[1])
             self.publish_count += 1
             self.pub_count.publish(self.publish_count)
