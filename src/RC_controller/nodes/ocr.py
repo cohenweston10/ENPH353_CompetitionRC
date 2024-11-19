@@ -212,7 +212,7 @@ class OCRNode:
         result = [top_string, bottom_string]
 
         # Debug: Log the published result
-        rospy.loginfo("Publishing result: %s", result)
+        # rospy.loginfo("Publishing result: %s", result)
 
         # Publish the array
         self.result_publisher.publish(String(data=str(result)))

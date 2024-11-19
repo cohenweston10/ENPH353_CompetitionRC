@@ -23,6 +23,14 @@ class CompProtocol:
         self.pub.publish("STARTUP")
         rospy.loginfo("Published STARTUP state to /state")
 
+        rospy.sleep(1)
+        self.pub.publish("DRIVING")
+        rospy.loginfo("Published DRIVING state to /state")
+
+        rospy.sleep(3)
+        self.pub.publish("STOP")
+        rospy.loginfo("Published STOP state to /state")
+
         rospy.spin()
 
 
