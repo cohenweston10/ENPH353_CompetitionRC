@@ -47,8 +47,8 @@ class OCRNode:
             self.latest_image = np.expand_dims(self.latest_image, axis=-1)
 
             # Display the received image
-            cv2.imshow("Received Image", self.latest_image)
-            cv2.waitKey(1)
+            # cv2.imshow("Received Image", self.latest_image)
+            # cv2.waitKey(1)
 
             self.process_and_publish()
         except Exception as e:
