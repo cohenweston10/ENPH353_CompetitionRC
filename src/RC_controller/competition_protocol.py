@@ -58,7 +58,7 @@ class CompProtocol:
         while self.clue_count < 4:
             rospy.sleep(1)
             drive_time += 1
-            if drive_time >= 5:
+            if drive_time >= 25:
                 break
 
         rospy.sleep(3)
