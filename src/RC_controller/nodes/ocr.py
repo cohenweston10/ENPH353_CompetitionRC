@@ -177,8 +177,8 @@ class OCRNode:
         # rospy.loginfo(f"Bottom Characters Shape: {test_bottom_np.shape}")
 
         # Predict characters
-        top_string = self.model.predict(test_top_np)
-        bottom_string = self.model.predict(test_bottom_np)
+        top_string = self.model.predict(test_top_np, verbose=0)
+        bottom_string = self.model.predict(test_bottom_np, verbose=0)
 
         # Debug: Log raw predictions
         # rospy.loginfo(f"Top Predictions: {top_string}")

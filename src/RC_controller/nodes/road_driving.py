@@ -15,11 +15,10 @@ class RoadDriving:
         # Subscribe to the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
+        self.state = ""
+
     def state_callback(self, state):
-        if state.data == "DRIVING":
-            self.update_velocity(1, 0, 1, 0)
-        elif state.data == "STOP":
-            self.update_velocity(0,0,0,0)
+        self.state = state.data
 
     @staticmethod
     def quaternion_to_yaw(orientation):
@@ -49,12 +48,26 @@ class RoadDriving:
         vel_msg.linear.y = vy
         vel_msg.linear.z = vz
         vel_msg.angular.z = vaz
-        rospy.loginfo("Publishing New Velocity")
+        # rospy.loginfo("Publishing New Velocity")
         self.vel_pub.publish(vel_msg)
+
+    def operate(self):
+        """Main loop to check state and drive accordingly."""
+        while not rospy.is_shutdown():
+            if self.state == "DRIVING":
+                ######
+                #
+                # Implement PID here
+                #
+                ######
+                self.update_velocity(1, 0, 0, 0)
+            elif self.state == "STOP":
+                self.update_velocity(0, 0, 0, 0)
+            rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 
     def start(self):
         # Start the ROS loop
-        rospy.spin()
+        self.operate()
 
 if __name__ == '__main__':
     # Create an instance of the RoadDriving class

@@ -16,7 +16,7 @@
 		<arg name="name" default="quadrotor"/>
 		<arg name="tf_prefix" default="$(optenv ROS_NAMESPACE)"/>
 		<arg name="x" default="5.5"/>
-		<arg name="y" default="2.2"/>
+		<arg name="y" default="2.3"/>
 		<arg name="z" default="0.3"/>
 		<arg name="Y" default="-1.5707963"/>
 
