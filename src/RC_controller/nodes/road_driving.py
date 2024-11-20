@@ -16,7 +16,7 @@ THRESHOLD = 200 #value is based off of lab 2
 
 TOPIC_CONTROL = '/quad/cmd_vel'
 TOPIC_PROCESSED_IMAGE = 'quad/augmened_vision'
-TOPIC_IMAGE_FEED = '/rrbot/downward_cam/down_camera/image'
+TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
 LINEAR_SPEED = 2
 ANGULAR_SPEED = 14
@@ -26,12 +26,11 @@ SCAN_HEIGHT = 10
 #return the center coordinate of the road
 #if no road is detected, return -1
 def getRoadCenterCoord(frame):
-  #grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  grayFrame = frame
-  frameHeight = int(grayFrame.shape[1])
+  grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  frameHeight = int(grayFrame.shape[0])
 
   #Record the horizontal positions of any pixels below the threshold
-  roadValues = np.array(np.where(grayFrame[frameHeight - SCAN_HEIGHT] < THRESHOLD))
+  roadValues = np.array(np.where(grayFrame[frameHeight - SCAN_HEIGHT] > THRESHOLD))
 
   #Update the circle center coordinate for the new frame unless no road is detected
   if not roadValues.size == 0:
@@ -66,11 +65,14 @@ class RoadDriving:
         self.state = ""
         self.clue_count = 0
         self.switch_pending = True
-        self.image = np.zeros((70, 45))
+        self.image = None
 
     def image_callback(self, image):
         try:
-            self.image: np.ndarray = self.bridge.imgmsg_to_cv2(image, "passthrough")
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.image = cv_image.astype(np.uint8)        
         except CvBridgeError as e:
             rospy.loginfo(e)
             return
@@ -118,7 +120,7 @@ class RoadDriving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0.3,0)
+                self.update_velocity(0,0,0.35,0)
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
@@ -126,6 +128,8 @@ class RoadDriving:
                         rospy.loginfo("Swapping Left")
                         self.sideSwap("ToLeft")
                         self.switch_pending = False
+                    while self.image is None: #wait for an image to be received
+                        ()
                     self.lineFollow()
                 elif self.clue_count == 1:
                     if self.switch_pending == True:
@@ -142,11 +146,11 @@ class RoadDriving:
 
     def sideSwap(self, direction):
         if direction == "ToLeft":
-            self.update_velocity(0,0.5,0,0)
+            self.update_velocity(0,0.3,0,0)
             rospy.sleep(1)
             self.update_velocity(0, 0, 0, 0)
         elif direction == "ToRight":
-            self.update_velocity(0,-0.5,0,0)
+            self.update_velocity(0,-0.3,0,0)
             rospy.sleep(1)
             self.update_velocity(0, 0, 0, 0)
 
@@ -154,8 +158,12 @@ class RoadDriving:
 
         cv_image = self.image
 
-        frameHeight = cv_image.shape[1]
-        frameWidth = len(cv_image)
+        # cv2.imshow("Raw Image", cv_image)
+        # cv2.waitKey(1)
+
+
+        frameHeight = cv_image.shape[0]
+        frameWidth = cv_image.shape[1]
         seeRoad = False
         roadToLeft = 1
         frameCenter = float(frameWidth) / 2
@@ -180,7 +188,9 @@ class RoadDriving:
 
             # self.image_pub.publish(augmented_vision)
 
-            cv2.imshow(imgWithCircle)
+            cv2.imshow("Processed Image", imgWithCircle)
+            cv2.waitKey(1)
+
         except CvBridgeError as e:
             rospy.loginfo(e)
             return
