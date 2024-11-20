@@ -62,7 +62,6 @@ class RoadDriving:
 
         self.state = ""
         self.clue_count = 0
-        self.switch_pending = True
         self.image = None
 
     def image_callback(self, image):
@@ -118,24 +117,16 @@ class RoadDriving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0.35,0)
+                self.update_velocity(0,0,0.3,0)
 
             elif self.state == "DRIVING":
+                rospy.loginfo(f"clue count is {self.clue_count}")
                 if self.clue_count == 0:
-                    if self.switch_pending == True:
-                        rospy.loginfo("Swapping Left")
-                        self.sideSwap("ToLeft")
-                        self.switch_pending = False
-                    while self.image is None: #wait for an image to be received
-                        ()
-                    self.lineFollow()
+                    self.update_velocity(0.5,0,0,0)
                 elif self.clue_count == 1:
-                    if self.switch_pending == True:
-                        rospy.loginfo("Swapping Right")
-                        self.sideSwap("ToRight")
-                        self.switch_pending = False
+                    self.update_velocity(0.5,0,0,0)
+                elif self.clue_count == 2:
                     self.lineFollow()
-
 
             elif self.state == "STOP":
                 self.update_velocity(0, 0, 0, 0)

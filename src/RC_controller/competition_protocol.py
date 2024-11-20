@@ -9,6 +9,9 @@ from std_msgs.msg import String
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
 import numpy as np
+import roslaunch
+import subprocess
+
 
 class CompProtocol:
     def __init__(self):
@@ -42,15 +45,16 @@ class CompProtocol:
             print ("Service call failed")
 
     def respawn(self):
-        self.spawn_position([5.52, 2.3, 0.06, 0, 0, np.sin(-np.pi/4), np.cos(-np.pi/4)])
-        rospy.loginfo("Respawning")
+        self.spawn_position([5.52, 2.3, 0, 0, 0, np.sin(-np.pi/4), np.cos(-np.pi/4)])
+        rospy.loginfo("Respawn Complete")
+
 
     def run(self):
         rospy.sleep(1)
         self.pub.publish("STARTUP")
         rospy.loginfo("Published STARTUP state to /state")
 
-        rospy.sleep(1)
+        rospy.sleep(0.5)
         self.pub.publish("DRIVING")
         rospy.loginfo("Published DRIVING state to /state")
 
@@ -58,10 +62,9 @@ class CompProtocol:
         while self.clue_count < 4:
             rospy.sleep(1)
             drive_time += 1
-            if drive_time >= 25:
+            if drive_time >= 15:
                 break
 
-        rospy.sleep(3)
         self.pub.publish("STOP")
         rospy.loginfo("Published STOP state to /state")
 
