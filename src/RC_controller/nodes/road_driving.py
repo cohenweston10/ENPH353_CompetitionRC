@@ -20,7 +20,7 @@ TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 LINEAR_SPEED = 0.5
 ANGULAR_SPEED = 0.5
 
-SCAN_HEIGHT = 10
+SCAN_HEIGHT = 400
 
 #return the center coordinate of the road
 #if no road is detected, return -1
@@ -122,18 +122,10 @@ class RoadDriving:
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
-                    if self.switch_pending == True:
-                        rospy.loginfo("Swapping Left")
-                        self.sideSwap("ToLeft")
-                        self.switch_pending = False
                     while self.image is None: #wait for an image to be received
                         ()
                     self.lineFollow()
                 elif self.clue_count == 1:
-                    if self.switch_pending == True:
-                        rospy.loginfo("Swapping Right")
-                        self.sideSwap("ToRight")
-                        self.switch_pending = False
                     self.lineFollow()
 
 
@@ -198,8 +190,7 @@ class RoadDriving:
             angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED * -1
 
             # if the road moves away fromt the camera center, robot will slow down
-            linX = LINEAR_SPEED * (1-proportionAwayFromCenter)
-            #linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
+            linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.5)
 
             self.update_velocity(linX,0,0,angZ)
 
