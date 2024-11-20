@@ -15,7 +15,6 @@ from sensor_msgs.msg import Image
 THRESHOLD = 200 #value is based off of lab 2
 
 TOPIC_CONTROL = '/quad/cmd_vel'
-TOPIC_PROCESSED_IMAGE = 'quad/augmened_vision'
 TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
 LINEAR_SPEED = 0.5
@@ -59,7 +58,6 @@ class RoadDriving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(60)
 
-        self.image_pub = rospy.Publisher(TOPIC_PROCESSED_IMAGE, Image)
         self.image_sub = rospy.Subscriber(TOPIC_IMAGE_FEED,Image,self.image_callback)
 
         self.state = ""
@@ -181,12 +179,6 @@ class RoadDriving:
         # draw a circle on the image, just like lab 2 (for debugging/visual feedback)
         try:
             imgWithCircle = cv2.circle(cv_image,(int(roadCenterCoord),int(frameHeight) - SCAN_HEIGHT), 15, (255,0,255), -1)
-            #imgWithCircle = self.bridge.imgmsg_to_cv2(imgWithCircle, "64FC1")
-            # imgWithCircle = cv2.convertScaleAbs(imgWithCircle)  # Convert to 8-bit
-            # imgWithCircle = cv2.cvtColor(imgWithCircle, cv2.COLOR_GRAY2BGR)
-            # augmented_vision = self.bridge.cv2_to_imgmsg(imgWithCircle, encoding="64FC1")
-
-            # self.image_pub.publish(augmented_vision)
 
             cv2.imshow("Processed Image", imgWithCircle)
             cv2.waitKey(1)
