@@ -48,7 +48,7 @@ class RoadDriving:
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
 
-        # Subscribe to the State output
+        # Subscribe t        self.switch_pending = Trueo the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
         # Subscribe to the Clue Count output
@@ -63,6 +63,7 @@ class RoadDriving:
         self.state = ""
         self.clue_count = 0
         self.image = None
+        self.switch_pending = True
 
     def image_callback(self, image):
         try:
@@ -117,31 +118,38 @@ class RoadDriving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0.3,0)
+                self.update_velocity(0,0,0.5,0)
 
             elif self.state == "DRIVING":
-                rospy.loginfo(f"clue count is {self.clue_count}")
                 if self.clue_count == 0:
-                    self.update_velocity(0.5,0,0,0)
+                    if self.switch_pending == True:
+                        rospy.loginfo("Swapping Left")
+                        self.sideSwap("ToLeft")
+                        rospy.sleep(1)
+                        self.switch_pending = False
+                    self.update_velocity(0.2,0,0,0)
                 elif self.clue_count == 1:
+                    if self.switch_pending == True:
+                        rospy.loginfo("Swapping Right")
+                        self.sideSwap("ToRight")
+                        rospy.sleep(2)
+                        rospy.loginfo("Done Swapping Right")
+                        self.switch_pending = False
                     self.update_velocity(0.5,0,0,0)
                 elif self.clue_count == 2:
                     self.lineFollow()
 
             elif self.state == "STOP":
                 self.update_velocity(0, 0, 0, 0)
+                self.switch_pending = True
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 
 
     def sideSwap(self, direction):
         if direction == "ToLeft":
             self.update_velocity(0,0.3,0,0)
-            rospy.sleep(1)
-            self.update_velocity(0, 0, 0, 0)
         elif direction == "ToRight":
             self.update_velocity(0,-0.3,0,0)
-            rospy.sleep(1)
-            self.update_velocity(0, 0, 0, 0)
 
     def lineFollow(self):
 
@@ -171,8 +179,8 @@ class RoadDriving:
         try:
             imgWithCircle = cv2.circle(cv_image,(int(roadCenterCoord),int(frameHeight) - SCAN_HEIGHT), 15, (255,0,255), -1)
 
-            cv2.imshow("Processed Image", imgWithCircle)
-            cv2.waitKey(1)
+            # cv2.imshow("Processed Image", imgWithCircle)
+            # cv2.waitKey(1)
 
         except CvBridgeError as e:
             rospy.loginfo(e)
