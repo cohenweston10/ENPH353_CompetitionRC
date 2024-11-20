@@ -18,8 +18,8 @@ TOPIC_CONTROL = '/quad/cmd_vel'
 TOPIC_PROCESSED_IMAGE = 'quad/augmened_vision'
 TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
-LINEAR_SPEED = 2
-ANGULAR_SPEED = 14
+LINEAR_SPEED = 0.5
+ANGULAR_SPEED = 0.5
 
 SCAN_HEIGHT = 10
 
@@ -197,20 +197,19 @@ class RoadDriving:
 
         # if the robot does not see road, it will roate in place
         if roadCenterCoord == -1:
-            angZ = roadToLeft * ANGULAR_SPEED
+            angZ = roadToLeft * ANGULAR_SPEED * -1
             self.update_velocity(0,0,0,angZ)
         else:
             # scale the rotation speed depending on how far the road is from the center
             distanceFromCenter = np.abs(frameCenter - roadCenterCoord)
             proportionAwayFromCenter = np.abs(float(distanceFromCenter) / float(frameCenter))
-            angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED
+            angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED * -1
 
             # if the road moves away fromt the camera center, robot will slow down
-            linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
+            linX = LINEAR_SPEED * (1-proportionAwayFromCenter)
+            #linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
 
             self.update_velocity(linX,0,0,angZ)
-
-
 
     def start(self):
         # Start the ROS loop
