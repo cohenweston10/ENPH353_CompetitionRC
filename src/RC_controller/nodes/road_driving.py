@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+import time
 
 
 
@@ -54,6 +55,9 @@ class RoadDriving:
         # Subscribe to the Clue Count output
         rospy.Subscriber('/clue_count', Int8, self.clue_count_callback)
 
+        # Subscribe to the OCR output
+        rospy.Subscriber('/ocr/processed_strings', String, self.OCRcallback)
+
 
         self.bridge = CvBridge()
         self.rate = rospy.Rate(60)
@@ -64,6 +68,8 @@ class RoadDriving:
         self.clue_count = 0
         self.image = None
         self.switch_pending = True
+        self.clue_searching = False
+        self.last_clue = -5
 
     def image_callback(self, image):
         try:
@@ -75,13 +81,19 @@ class RoadDriving:
             rospy.loginfo(e)
             return
         
-
     def state_callback(self, state):
         self.state = state.data
 
     def clue_count_callback(self, count):
         self.clue_count = count.data
         self.switch_pending = True
+        self.clue_searching = False
+        self.last_clue = time.time()
+
+    def OCRcallback(self, data):
+        if time.time() - self.last_clue > 3:
+            self.clue_searching = True
+
 
     @staticmethod
     def quaternion_to_yaw(orientation):
@@ -127,7 +139,10 @@ class RoadDriving:
                         self.sideSwap("ToLeft")
                         rospy.sleep(1)
                         self.switch_pending = False
-                    self.update_velocity(0.2,0,0,0)
+                    if self.clue_searching == True:
+                        self.update_velocity(0.1,0,0,0)
+                    else:
+                        self.update_velocity(0.3,0,0,0)
                 elif self.clue_count == 1:
                     if self.switch_pending == True:
                         rospy.loginfo("Swapping Right")
@@ -135,7 +150,10 @@ class RoadDriving:
                         rospy.sleep(2)
                         rospy.loginfo("Done Swapping Right")
                         self.switch_pending = False
-                    self.update_velocity(0.5,0,0,0)
+                    if self.clue_searching == True:
+                        self.update_velocity(0.1,0,0,0)
+                    else:
+                        self.update_velocity(0.75,0,0,0)
                 elif self.clue_count == 2:
                     self.lineFollow()
 
