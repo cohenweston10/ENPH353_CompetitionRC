@@ -89,7 +89,7 @@ class RoadDriving:
         self.last_clue = time.time()
 
     def OCRcallback(self, data):
-        if time.time() - self.last_clue > 6:
+        if time.time() - self.last_clue > 75:
             self.clue_searching = True
             rospy.loginfo(f"Searching for clue {self.clue_count + 1}, time since last clue is {time.time() - self.last_clue}")
 
@@ -127,14 +127,14 @@ class RoadDriving:
                         self.update_velocity(0.1,0,0,0)
 
                     else: # Regular operation
-                        self.update_velocity(0.3,0,0,0)
+                        self.update_velocity(0.2,0,0,0)
 
 
                 elif self.clue_count == 1:
                     if self.switch_pending == True: # Pre operation
                         rospy.loginfo("Swapping Right")
                         self.sideSwap("ToRight")
-                        rospy.sleep(2)
+                        rospy.sleep(3)
 
                         self.switch_pending = False
                         
@@ -142,14 +142,14 @@ class RoadDriving:
                         self.update_velocity(0.1,0,0,0)
 
                     else: # Regular operation
-                        self.update_velocity(0.75,0,0,0) 
+                        self.update_velocity(0.65,0,0,0) 
 
 
 
                 elif self.clue_count == 2:
                     if self.switch_pending == True: # Pre operation
                         rospy.loginfo("Doing state 2 pre-operation")
-                        # TODO state 2 pre-operation
+                        self.localize2()
 
                         self.switch_pending = False
 
@@ -159,7 +159,7 @@ class RoadDriving:
 
                     else:
                         # TODO state 2 regular operation
-                        self.lineFollow()
+                        rospy.loginfo("In regular state 2 operation")
 
                 elif self.clue_count == 3:
                     self.lineFollow()
@@ -242,6 +242,70 @@ class RoadDriving:
             #linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
 
             self.update_velocity(linX,0,0,angZ)
+
+    def localize2(self):
+        centered = False
+
+        while (not centered):
+            cv_image = self.image 
+
+            if cv_image is None or cv_image.size == 0:
+                return     
+
+            # It converts the BGR color space of image to HSV color space 
+            hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV) 
+
+            # Threshold of blue in HSV space 
+            lower_blue = np.array([80, 50, 160]) 
+            upper_blue = np.array([180, 255, 255])
+
+            # preparing the mask to overlay 
+            mask = cv2.inRange(hsv, lower_blue, upper_blue) 
+
+            # The black region in the mask has the value of 0, 
+            # so when multiplied with original image removes all non-blue regions 
+            blue = cv2.bitwise_and(cv_image, cv_image, mask = mask) 
+
+            blueHeight = blue.shape[0]
+            blueWidth = blue.shape[1]
+
+            midHeight = blueHeight // 2
+            midWidth = blueWidth // 2
+
+            horizontal = np.array(np.where(blue[midHeight] > 10))
+            hloc = sum(horizontal) / len(horizontal)
+            vertical = np.array(np.where(blue[:][midWidth] > 10))
+            vloc = sum(vertical) / len(vertical)
+            
+            range = 25
+
+            if vloc < midHeight - range:
+                self.update_velocity(0.5,0,0,0)
+                rospy.sleep(0.25)
+                self.update_velocity(0,0,0,0)
+            elif vloc > midHeight + range: 
+                self.update_velocity(-0.5,0,0,0)
+                rospy.sleep(0.25)
+                self.update_velocity(0,0,0,0)
+            elif hloc < midWidth - range:
+                self.update_velocity(0,-0.5,0,0)
+                rospy.sleep(0.25)
+                self.update_velocity(0,0,0,0)
+            elif hloc > midWidth + range:
+                self.update_velocity(0,0.5,0,0)
+                rospy.sleep(0.25)
+                self.update_velocity(0,0,0,0)
+            else:
+                centered = True
+                rospy.loginfo("Localized on sign 2")
+
+            rospy.loginfo("Trying to localize on sign 2")
+
+            cv2.imshow("Blue", blue)
+            cv2.waitKey(1)  
+
+
+
 
     def start(self):
         # Start the ROS loop
