@@ -1,5 +1,5 @@
 # Add the camera position controller
 front_cam_joint_position_controller:
     type: "position_controllers/JointPositionController"
-    joint: "front_cam_joint"
+    joint: "rotate_front_cam_joint"
     pid: {p: 20.0, i: 0.0, d: 0.1}

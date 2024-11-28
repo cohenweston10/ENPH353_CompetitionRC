@@ -10,17 +10,35 @@
     <!-- Instantiate quadrotor_base_macro once (has no parameters atm) -->
     <xacro:quadrotor_base_macro />
     
+    <!-- Add Rotatable Joint for Forward-Facing Camera -->
+    <!-- Rotating base -->
+    <link name="front_cam_base">
+      <inertial>
+        <mass value="0.1"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+      </inertial>
+    </link>
+
+    <!-- Rotating joint -->
+    <joint name="rotate_front_cam_joint" type="revolute">
+      <parent link="base_link"/>
+      <child link="front_cam_base"/>
+      <origin xyz="0.1 0.0 0.075" rpy="0 0 0"/> <!-- Match camera origin -->
+      <axis xyz="0 0 1"/> <!-- Rotate around Z-axis -->
+      <limit lower="0.0" upper="6.283185307" effort="1.0" velocity="1.0"/> <!-- 0° to 360° -->
+    </joint>
+
     <!-- Forward facing camera -->
     <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="front_cam" parent="base_link" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="10" res_x="1750" res_y="1000" image_format="R8G8B8" hfov="120">
-      <origin xyz="0.1 0.0 0.075" rpy="0 0 0"/>
+    <xacro:generic_camera name="front_cam" parent="front_cam_base" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="10" res_x="1750" res_y="1000" image_format="R8G8B8" hfov="120">
+      <origin xyz="0 0 0" rpy="0 0 0"/> <!-- Origin now relative to front_cam_base -->
     </xacro:generic_camera>
 
-     <!-- Downward facing camera -->
+    <!-- Downward facing camera -->
     <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
     <xacro:generic_camera name="downward_cam" parent="base_link" ros_topic="down_camera/image" cam_info_topic="down_camera/camera_info" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="90">
       <origin xyz="0.19 0.0 0.092" rpy="0 ${M_PI/2} 0"/>
     </xacro:generic_camera>
     
 </robot>
-  
