@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>953</width>
+    <height>834</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="front_cam_l">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>100</y>
+      <width>500</width>
+      <height>286</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Front Cam</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="heading_l">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>20</y>
+      <width>331</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Main Title/Graphic</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="left_cam_l">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>590</y>
+      <width>300</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Left Cam</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="down_cam_l">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>400</y>
+      <width>300</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Down Cam</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="right_cam_l">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>590</y>
+      <width>300</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Right Cam</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="back_cam_l">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>400</y>
+      <width>300</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Back Cam</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="comp_log_l">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>100</y>
+      <width>401</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Comp Protocol Log</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="nodes_log_l">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>400</y>
+      <width>281</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Nodes Log</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="drone_controller_l">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>590</y>
+      <width>281</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Hector Manual Controller</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>953</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
