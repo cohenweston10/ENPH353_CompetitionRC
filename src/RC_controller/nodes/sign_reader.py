@@ -22,6 +22,10 @@ class SignReader:
 
         # Subscribe to the camera topic
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.image_callback)
+
 
         # Initialize a frame counter
         self.frame_counter = 0
