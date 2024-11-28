@@ -11,8 +11,6 @@ from sensor_msgs.msg import Image
 import time
 
 
-
-
 THRESHOLD = 200 #value is based off of lab 2
 
 TOPIC_CONTROL = '/quad/cmd_vel'
@@ -91,26 +89,9 @@ class RoadDriving:
         self.last_clue = time.time()
 
     def OCRcallback(self, data):
-        if time.time() - self.last_clue > 3:
+        if time.time() - self.last_clue > 6:
             self.clue_searching = True
-
-
-    @staticmethod
-    def quaternion_to_yaw(orientation):
-        """
-        Converts quaternion orientation to yaw.
-        :param orientation: A quaternion object from Imu topic
-        """
-        x = orientation.x
-        y = orientation.y
-        z = orientation.z
-        w = orientation.w
-        t3 = 2.0 * (w * z + x * y)
-        t4 = 1.0 - 2.0 * (y * y + z * z)
-        yawZActual = math.atan2(t3, t4)
-        if yawZActual < 0:
-            yawZActual += 2 * math.pi
-        return yawZActual
+            rospy.loginfo(f"Searching for clue {self.clue_count + 1}, time since last clue is {time.time() - self.last_clue}")
 
     def update_velocity(self, forward, sideways, up, yaw):
         vx = forward * 0.5  # Forward/Backward
@@ -133,33 +114,75 @@ class RoadDriving:
                 self.update_velocity(0,0,0.5,0)
 
             elif self.state == "DRIVING":
+
                 if self.clue_count == 0:
-                    if self.switch_pending == True:
+                    if self.switch_pending == True: # Pre operation
                         rospy.loginfo("Swapping Left")
                         self.sideSwap("ToLeft")
                         rospy.sleep(1)
+
                         self.switch_pending = False
-                    if self.clue_searching == True:
+
+                    if self.clue_searching == True: # Post operation
                         self.update_velocity(0.1,0,0,0)
-                    else:
+
+                    else: # Regular operation
                         self.update_velocity(0.3,0,0,0)
+
+
                 elif self.clue_count == 1:
-                    if self.switch_pending == True:
+                    if self.switch_pending == True: # Pre operation
                         rospy.loginfo("Swapping Right")
                         self.sideSwap("ToRight")
                         rospy.sleep(2)
-                        rospy.loginfo("Done Swapping Right")
+
                         self.switch_pending = False
-                    if self.clue_searching == True:
+                        
+                    if self.clue_searching == True: # Post operation
                         self.update_velocity(0.1,0,0,0)
-                    else:
-                        self.update_velocity(0.75,0,0,0)
+
+                    else: # Regular operation
+                        self.update_velocity(0.75,0,0,0) 
+
+
+
                 elif self.clue_count == 2:
+                    if self.switch_pending == True: # Pre operation
+                        rospy.loginfo("Doing state 2 pre-operation")
+                        # TODO state 2 pre-operation
+
+                        self.switch_pending = False
+
+                    if self.clue_searching == True: # Post operation
+                        # TODO state 2 post-operation
+                        rospy.loginfo("Looking for sign 3")
+
+                    else:
+                        # TODO state 2 regular operation
+                        self.lineFollow()
+
+                elif self.clue_count == 3:
+                    self.lineFollow()
+
+                elif self.clue_count == 4:
+                    self.lineFollow()
+
+                elif self.clue_count == 5:
+                    self.lineFollow()
+
+                elif self.clue_count == 6:
+                    self.lineFollow()
+
+                elif self.clue_count == 7:
+                    self.lineFollow()
+
+                elif self.clue_count == 8:
                     self.lineFollow()
 
             elif self.state == "STOP":
                 self.update_velocity(0, 0, 0, 0)
                 self.switch_pending = True
+
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 
 
