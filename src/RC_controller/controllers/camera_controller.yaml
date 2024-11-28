@@ -1,4 +1,3 @@
-# Add the camera position controller
 front_cam_joint_position_controller:
     type: "position_controllers/JointPositionController"
     joint: "rotate_front_cam_joint"

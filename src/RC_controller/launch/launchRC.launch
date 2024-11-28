@@ -30,5 +30,11 @@
          output="screen">
       </node>
 
+      <!-- Load the camera controller parameters -->
+      <rosparam command="load" file="$(find RC_controller)/controllers/camera_controller.yaml" />
+
+      <!-- Spawn the camera position controller -->
+      <node name="controller_spawner" pkg="controller_manager" type="spawner"
+            args="front_cam_joint_position_controller" ns="/quad" />
    
 </launch>
