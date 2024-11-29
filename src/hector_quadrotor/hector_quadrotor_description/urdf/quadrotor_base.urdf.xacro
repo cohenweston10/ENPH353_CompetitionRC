@@ -17,14 +17,14 @@
       <visual>
         <origin xyz="0 0 0.091" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_base.dae"/>
+          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_baseRC.dae"/>
         </geometry>
       </visual>
 
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_base_half.stl"/>
+          <mesh filename="package://hector_quadrotor_description/meshes/quadrotor/quadrotor_baseRC.stl"/>
         </geometry>
       </collision>
     </link>
