@@ -27,9 +27,19 @@ def loadCrimesProfileCompetition():
     print("Loading clues ...")
     response = requests.get(URL)
 
+    with open(SCRIPT_PATH + '100scenarios.csv', mode='r') as file:
+        reader = csv.reader(file)
+        rows = list(reader)  # Convert the reader object to a list of rows
+
+        random_row_index = random.randint(1, 100)
+
+        # Read a specific row, e.g., the second row (index 1)
+        specific_row = rows[random_row_index]  # Adjust the index as needed
+        #print(specific_row)
+
     raw = response.text.split('\n')
     key_list   = raw[0].split(',')
-    value_list = raw[1].split(',')
+    value_list = specific_row.split(',')
 
     clues = {}
 
