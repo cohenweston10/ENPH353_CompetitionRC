@@ -22,6 +22,10 @@ class SignReader:
 
         # Subscribe to the camera topic
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.image_callback)
+
 
         # Initialize a frame counter
         self.frame_counter = 0
@@ -80,7 +84,7 @@ class SignReader:
         self.frame_counter += 1
 
         # Process only every 10th frame
-        if self.frame_counter % 10 == 0:
+        if self.frame_counter % 1 == 0:
             # Call the read_sign method to process the image
             rectified_sign = self.read_sign(cv_image)
             if rectified_sign is not None:
