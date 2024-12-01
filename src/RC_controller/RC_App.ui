@@ -6,30 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>953</width>
-    <height>834</height>
+    <width>977</width>
+    <height>936</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ENPH 353 - Rylan Stutters and Cohen Weston</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="front_cam_l">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>100</y>
-      <width>500</width>
-      <height>286</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="text">
-     <string>Front Cam</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="heading_l">
     <property name="geometry">
      <rect>
@@ -49,10 +33,10 @@
    <widget class="QLabel" name="left_cam_l">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>590</y>
-      <width>300</width>
-      <height>171</height>
+      <x>0</x>
+      <y>380</y>
+      <width>480</width>
+      <height>274</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -65,10 +49,10 @@
    <widget class="QLabel" name="down_cam_l">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>400</y>
+      <x>340</x>
+      <y>670</y>
       <width>300</width>
-      <height>171</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -81,10 +65,10 @@
    <widget class="QLabel" name="right_cam_l">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>590</y>
-      <width>300</width>
-      <height>171</height>
+      <x>490</x>
+      <y>380</y>
+      <width>480</width>
+      <height>274</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -97,10 +81,10 @@
    <widget class="QLabel" name="back_cam_l">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>400</y>
-      <width>300</width>
-      <height>171</height>
+      <x>490</x>
+      <y>100</y>
+      <width>480</width>
+      <height>274</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -113,10 +97,10 @@
    <widget class="QLabel" name="comp_log_l">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>100</y>
-      <width>401</width>
-      <height>281</height>
+      <x>20</x>
+      <y>680</y>
+      <width>301</width>
+      <height>201</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -130,9 +114,9 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>400</y>
-      <width>281</width>
-      <height>171</height>
+      <y>670</y>
+      <width>301</width>
+      <height>201</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -142,20 +126,20 @@
      <string>Nodes Log</string>
     </property>
    </widget>
-   <widget class="QLabel" name="drone_controller_l">
+   <widget class="QLabel" name="front_cam_l">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>590</y>
-      <width>281</width>
-      <height>171</height>
+      <x>0</x>
+      <y>100</y>
+      <width>480</width>
+      <height>274</height>
      </rect>
     </property>
     <property name="frameShape">
      <enum>QFrame::Box</enum>
     </property>
     <property name="text">
-     <string>Hector Manual Controller</string>
+     <string>Front Cam</string>
     </property>
    </widget>
   </widget>
@@ -164,7 +148,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>953</width>
+     <width>977</width>
      <height>22</height>
     </rect>
    </property>

@@ -2,33 +2,6 @@
     <!-- Launch the custom controller UI -->
     <node pkg="hector_ui" type="ui_hector_quad.py" name="ui_hector_quad" output="screen" />
 
-    <!-- Launch rqt_image_view for front -->
-    <node pkg="rqt_image_view" type="rqt_image_view" name="front" args="/quad/front_cam/camera/image">
-        <param name="window_width" value="800"/>
-        <param name="window_height" value="600"/>
-    </node>
-
-    <!-- Launch rqt_image_view for back -->
-    <node pkg="rqt_image_view" type="rqt_image_view" name="back" args="/quad/back_cam/back_camera/image">
-        <param name="window_width" value="800"/>
-        <param name="window_height" value="600"/>
-    </node>
-
-    <!-- Launch rqt_image_view for left -->
-    <node pkg="rqt_image_view" type="rqt_image_view" name="left" args="/quad/left_cam/left_camera/image">
-        <param name="window_width" value="800"/>
-        <param name="window_height" value="600"/>
-    </node>
-
-    <!-- Launch rqt_image_view for right -->
-    <node pkg="rqt_image_view" type="rqt_image_view" name="right" args="/quad/right_cam/right_camera/image">
-        <param name="window_width" value="800"/>
-        <param name="window_height" value="600"/>
-    </node>
-
-    <!-- Launch rqt_image_view for down -->
-    <node pkg="rqt_image_view" type="rqt_image_view" name="down" args="/quad/downward_cam/down_camera/image">
-        <param name="window_width" value="640"/>
-        <param name="window_height" value="480"/>
-    </node>
+    <!-- Launch RC_App UI -->
+    <node pkg="RC_controller" type="RC_App.py" name="RC_App" output="screen" />
 </launch>

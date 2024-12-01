@@ -5,6 +5,10 @@ from PyQt5 import QtWidgets, QtGui, QtCore, uic
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
+import os
+
+ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RC_App.ui")
+icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -14,8 +18,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.setWindowIcon(QtGui.QIcon(icon_path))
+
         # Load the UI file
-        uic.loadUi("RC_App.ui", self)
+        uic.loadUi(ui_path, self)
 
         # Initialize ROS node
         rospy.init_node('camera_feed_gui', anonymous=True)

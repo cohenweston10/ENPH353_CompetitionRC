@@ -37,7 +37,7 @@
 			<arg name="use_ground_truth_for_control" value="$(arg use_ground_truth_for_control)"/>
 			<arg name="use_pose_estimation" value="$(arg use_pose_estimation)"/>
 		</include>
-		<!-- Add teleop_keyboard controller -->
+		<!-- Add UI and Controller -->
 		<include file="$(find RC_controller)/launch/droneUI.launch"/>
     </group>	
 
