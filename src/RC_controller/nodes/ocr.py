@@ -47,8 +47,8 @@ class OCRNode:
             self.latest_image = np.expand_dims(self.latest_image, axis=-1)
 
             # Display the received image
-            cv2.imshow("Received Image", self.latest_image)
-            cv2.waitKey(1)
+            # cv2.imshow("Received Image", self.latest_image)
+            # cv2.waitKey(1)
 
             self.process_and_publish()
         except Exception as e:
@@ -177,8 +177,8 @@ class OCRNode:
         # rospy.loginfo(f"Bottom Characters Shape: {test_bottom_np.shape}")
 
         # Predict characters
-        top_string = self.model.predict(test_top_np)
-        bottom_string = self.model.predict(test_bottom_np)
+        top_string = self.model.predict(test_top_np, verbose=0)
+        bottom_string = self.model.predict(test_bottom_np, verbose=0)
 
         # Debug: Log raw predictions
         # rospy.loginfo(f"Top Predictions: {top_string}")
@@ -212,7 +212,7 @@ class OCRNode:
         result = [top_string, bottom_string]
 
         # Debug: Log the published result
-        rospy.loginfo("Publishing result: %s", result)
+        # rospy.loginfo("Publishing result: %s", result)
 
         # Publish the array
         self.result_publisher.publish(String(data=str(result)))

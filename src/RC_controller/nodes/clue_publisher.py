@@ -47,10 +47,12 @@ class CluePublisher:
         self.submit_clue(self.publish_count, clue)
 
     def state_callback(self, state):
-        rospy.loginfo("Trying to start comp.")
         if state.data == "STARTUP":
+            rospy.loginfo("Starting Comp")
             self.start_comp()
-            rospy.loginfo("Starting Comp.")
+        elif state.data == "STOP":
+            rospy.loginfo("Ending Comp")
+            self.end_comp()
 
     def start(self):
         # Start the ROS loop

@@ -24,5 +24,11 @@
          output="screen">
       </node>
 
+      <node pkg="RC_controller"
+         type="road_driving.py"
+         name="road_driving" 
+         output="screen">
+      </node>
+
    
 </launch>
