@@ -7,6 +7,7 @@ from cv_bridge import CvBridge
 import cv2
 import os
 
+#define paths
 ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RC_App.ui")
 icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
 
