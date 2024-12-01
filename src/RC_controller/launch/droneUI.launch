@@ -3,5 +3,5 @@
     <node pkg="hector_ui" type="ui_hector_quad.py" name="ui_hector_quad" output="screen" />
 
     <!-- Launch RC_App UI -->
-    <node pkg="RC_controller" type="RC_App.py" name="RC_App" output="screen" />
+    <!-- <node pkg="RC_controller" type="RC_App.py" name="RC_App" output="screen" /> -->
 </launch>
