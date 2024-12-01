@@ -17,7 +17,7 @@ TOPIC_CONTROL = '/quad/cmd_vel'
 TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
 LINEAR_SPEED = 0.5
-ANGULAR_SPEED = 1.5
+ANGULAR_SPEED = 0.5
 
 SCAN_HEIGHT = 400
 
@@ -249,7 +249,7 @@ class RoadDriving:
         # if the robot does not see road, it will roate in place
         if roadCenterCoord == -1:
             angZ = roadToLeft * ANGULAR_SPEED * -1
-            self.update_velocity(0,0,0,angZ)
+            # self.update_velocity(0,0,0,angZ)
         else:
             # scale the rotation speed depending on how far the road is from the center
             distanceFromCenter = np.abs(frameCenter - roadCenterCoord)
@@ -260,7 +260,7 @@ class RoadDriving:
             linX = LINEAR_SPEED * (1-proportionAwayFromCenter)
             #linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
 
-            self.update_velocity(linX,0,0,angZ)
+            self.update_velocity(linX,angZ,0,0)
 
     def localize2(self):
         centered = False
