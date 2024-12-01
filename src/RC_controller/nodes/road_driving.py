@@ -11,24 +11,26 @@ from sensor_msgs.msg import Image
 import time
 
 
-THRESHOLD = 200 #value is based off of lab 2
+THRESHOLD = 50 #value is based off of lab 2
 
 TOPIC_CONTROL = '/quad/cmd_vel'
 TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
 LINEAR_SPEED = 0.5
-ANGULAR_SPEED = 0.5
+ANGULAR_SPEED = 1.5
 
-SCAN_HEIGHT = 10
+SCAN_HEIGHT = 400
 
 #return the center coordinate of the road
 #if no road is detected, return -1
 def getRoadCenterCoord(frame):
   grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  frameHeight = int(grayFrame.shape[0])
+  frameHeight = int(frame.shape[0])
 
   #Record the horizontal positions of any pixels below the threshold
-  roadValues = np.array(np.where(grayFrame[frameHeight - SCAN_HEIGHT] > THRESHOLD))
+  roadValues = np.where(grayFrame[frameHeight - SCAN_HEIGHT] > THRESHOLD)[0]
+  rospy.loginfo(f"There are {len(roadValues)} road pixels out of {frame.shape[1]} pixels in the scan row.")
+
 
   #Update the circle center coordinate for the new frame unless no road is detected
   if not roadValues.size == 0:
@@ -114,6 +116,9 @@ class RoadDriving:
                 self.update_velocity(0,0,0.5,0)
 
             elif self.state == "DRIVING":
+                self.lineFollow()
+
+            elif self.state == "DRIVING1": ##TESTING##
 
                 if self.clue_count == 0:
                     if self.switch_pending == True: # Pre operation
@@ -199,29 +204,43 @@ class RoadDriving:
         # cv2.imshow("Raw Image", cv_image)
         # cv2.waitKey(1)
 
+        hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
 
-        frameHeight = cv_image.shape[0]
-        frameWidth = cv_image.shape[1]
+        # Define the color range for the shape
+        lower_color = np.array([0, 0, 50])  # Adjust for the target color
+        upper_color = np.array([180, 50, 200])
+
+        # Create a mask for the color
+        mask = cv2.inRange(hsv, lower_color, upper_color)
+        filtered = cv2.bitwise_and(cv_image, cv_image, mask=mask)
+
+
+        frameHeight = filtered.shape[0]
+        frameWidth = filtered.shape[1]
         seeRoad = False
         roadToLeft = 1
         frameCenter = float(frameWidth) / 2
 
-        roadCenterCoord = getRoadCenterCoord(cv_image)
+        roadCenterCoord = getRoadCenterCoord(filtered)
         #rospy.loginfo(roadCenterCoord)
         if roadCenterCoord > frameCenter:
             roadToLeft = -1
+            rospy.loginfo("Road to the right, rotating left.")
+        else:
+            roadToLeft = 1
+            rospy.loginfo("Road to the left, rotating right.")
 
         # if seeRoad remains false, the robot will just rotate in place until it finds the road
         # roation direction is determined by roadToLeft truth value
-        if not roadCenterCoord == -1:
-            seeRoad = -1
+        if roadCenterCoord != -1:
+            seeRoad = True
 
         # draw a circle on the image, just like lab 2 (for debugging/visual feedback)
         try:
-            imgWithCircle = cv2.circle(cv_image,(int(roadCenterCoord),int(frameHeight) - SCAN_HEIGHT), 15, (255,0,255), -1)
+            imgWithCircle = cv2.circle(filtered,(int(roadCenterCoord),int(frameHeight) - SCAN_HEIGHT), 15, (255,0,255), -1)
 
-            # cv2.imshow("Processed Image", imgWithCircle)
-            # cv2.waitKey(1)
+            cv2.imshow("Processed Image", imgWithCircle)
+            cv2.waitKey(1)
 
         except CvBridgeError as e:
             rospy.loginfo(e)
@@ -235,7 +254,7 @@ class RoadDriving:
             # scale the rotation speed depending on how far the road is from the center
             distanceFromCenter = np.abs(frameCenter - roadCenterCoord)
             proportionAwayFromCenter = np.abs(float(distanceFromCenter) / float(frameCenter))
-            angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED * -1
+            angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED * 1
 
             # if the road moves away fromt the camera center, robot will slow down
             linX = LINEAR_SPEED * (1-proportionAwayFromCenter)

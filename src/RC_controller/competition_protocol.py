@@ -54,7 +54,7 @@ class CompProtocol:
         self.pub.publish("STARTUP")
         rospy.loginfo("Published STARTUP state to /state")
 
-        rospy.sleep(0.6)
+        rospy.sleep(0.5)
         self.pub.publish("DRIVING")
         rospy.loginfo("Published DRIVING state to /state")
 
