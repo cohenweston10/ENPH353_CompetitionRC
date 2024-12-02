@@ -71,8 +71,10 @@ class SignReader:
                 # Warp the region in the camera image to match the reference image perspective
                 rectified_sign = cv2.warpPerspective(gray, matrix, (ref_w, ref_h))
 
+                rospy.loginfo("Sign detected")
                 return rectified_sign  # Output rectified image
 
+        rospy.loginfo("Sign not detected")
         return None  # If no rectified image can be computed
 
     def image_callback(self, data):
