@@ -21,7 +21,7 @@ ANGULAR_SPEED = 1
 
 MAX_ANGULAR_SPEED = 5
 
-SCAN_HEIGHT = 400
+SCAN_HEIGHT = 479
 
 #return the center coordinate of the road
 #if no road is detected, return -1
@@ -274,7 +274,7 @@ class RoadDriving:
             # angZ = roadToLeft * np.exp(frontBackdistance/10) * proportionAwayFromCenter * ANGULAR_SPEED * 1/10
 
             error = frameCenter - upperRoadCenterCoord
-            angZ = 0.01 * error + 0.0001 * self.integral + 0.05 * (error - self.prev_error)
+            angZ = 0.01 * error + 0.0001 * self.integral + 0.1 * (error - self.prev_error)
             self.prev_error = error
             self.integral += error
 
@@ -284,13 +284,13 @@ class RoadDriving:
 
 
             # if the road moves away fromt the camera center, robot will slow down
-            linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
+            linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.2)
 
             linX = np.clip(linX, 0, 1)
 
-            if rightTurn:
-                angZ = -MAX_ANGULAR_SPEED
-                linX = 0.1
+            # if rightTurn:
+            #     angZ = -MAX_ANGULAR_SPEED
+            #     linX = 0.1
 
             self.update_velocity(linX,0,0,angZ)
 

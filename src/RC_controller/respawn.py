@@ -51,3 +51,4 @@ def respawn():
 if __name__ == '__main__':
     rospy.init_node('quadrotor_controller', anonymous=True)
     vel_pub = rospy.Publisher('/quad/cmd_vel', Twist, queue_size=1)
+    respawn()
