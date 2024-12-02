@@ -17,24 +17,6 @@
       <origin xyz="0.1 0.0 ${C_HEIGHT}" rpy="0 0 0"/>
     </xacro:generic_camera>
 
-    <!-- Backwards facing camera -->
-    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="back_cam" parent="base_link" ros_topic="back_camera/image" cam_info_topic="back_camera/camera_info" update_rate="10" res_x="1000" res_y="570" image_format="R8G8B8" hfov="120">
-      <origin xyz="-0.1 0.0 ${C_HEIGHT}" rpy="0 0 ${M_PI}"/>
-    </xacro:generic_camera>
-
-    <!-- Left facing camera -->
-    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="left_cam" parent="base_link" ros_topic="left_camera/image" cam_info_topic="left_camera/camera_info" update_rate="10" res_x="1000" res_y="570" image_format="R8G8B8" hfov="120">
-      <origin xyz="0.0 0.1 ${C_HEIGHT}" rpy="0 0 ${M_PI/2}"/>
-    </xacro:generic_camera>
-
-    <!-- Right facing camera -->
-    <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="right_cam" parent="base_link" ros_topic="right_camera/image" cam_info_topic="right_camera/camera_info" update_rate="10" res_x="1000" res_y="570" image_format="R8G8B8" hfov="120">
-      <origin xyz="0.0 -0.1 ${C_HEIGHT}" rpy="0 0 ${3*M_PI/2}"/>
-    </xacro:generic_camera>
-
      <!-- Downward facing camera -->
     <xacro:include filename="$(find hector_sensors_description)/urdf/generic_camera.urdf.xacro" />
     <xacro:generic_camera name="downward_cam" parent="base_link" ros_topic="down_camera/image" cam_info_topic="down_camera/camera_info" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="90">

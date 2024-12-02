@@ -94,38 +94,6 @@
      <string>Back Cam</string>
     </property>
    </widget>
-   <widget class="QLabel" name="comp_log_l">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>680</y>
-      <width>301</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="text">
-     <string>Comp Protocol Log</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="nodes_log_l">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>670</y>
-      <width>301</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="text">
-     <string>Nodes Log</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="front_cam_l">
     <property name="geometry">
      <rect>
@@ -140,6 +108,51 @@
     </property>
     <property name="text">
      <string>Front Cam</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="respawn_b">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>720</y>
+      <width>271</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>DejaVu Sans</family>
+      <pointsize>16</pointsize>
+      <weight>75</weight>
+      <italic>false</italic>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #3498db; /* Default */
+    color: white;
+    border: 2px solid #2c3e50;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #2980b9; /* Darker blue on hover */
+}
+
+QPushButton:pressed {
+    background-color: #1abc9c; /* Greenish color on press */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>Respawn at Start</string>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
     </property>
    </widget>
   </widget>

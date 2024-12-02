@@ -47,8 +47,8 @@ class OCRNode:
             self.latest_image = np.expand_dims(self.latest_image, axis=-1)
 
             # Display the received image
-            # cv2.imshow("Received Image", self.latest_image)
-            # cv2.waitKey(1)
+            cv2.imshow("Received Image", self.latest_image)
+            cv2.waitKey(1)
 
             self.process_and_publish()
         except Exception as e:
@@ -189,8 +189,8 @@ class OCRNode:
         bottom_string_chars = [self.find_actual_char(element) for element in bottom_string]
 
         # Debug: Log the results
-        # rospy.loginfo("Mapped Top String: %s", ''.join(top_string_chars))
-        # rospy.loginfo("Mapped Bottom String: %s", ''.join(bottom_string_chars))
+        rospy.loginfo("Mapped Top String: %s", ''.join(top_string_chars))
+        rospy.loginfo("Mapped Bottom String: %s", ''.join(bottom_string_chars))
 
         return ''.join(top_string_chars), ''.join(bottom_string_chars)
 

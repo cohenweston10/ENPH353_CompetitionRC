@@ -6,10 +6,12 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 import os
+import subprocess
 
 #define file paths
 ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RC_App.ui")
 icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
+respawn_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "respawn.py")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -23,6 +25,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Load the UI file
         uic.loadUi(ui_path, self)
+
+        self.respawn_b.clicked.connect(self.respawn_button)
 
         # Initialize ROS node
         rospy.init_node('camera_feed_gui', anonymous=True)
@@ -49,6 +53,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
             else:
                 rospy.logerr(f"Placeholder not found: {label_name}")
+
+    def respawn_button(self):        
+        # Execute the script
+        try:
+            subprocess.run(["python3", respawn_path], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error: {e}")
 
     def convert_cv_to_pixmap(self, cv_img):
         """

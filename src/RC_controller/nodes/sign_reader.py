@@ -8,6 +8,7 @@ import cv2
 from std_msgs.msg import String
 import os
 
+
 class SignReader:
     def __init__(self):
         # Initialize the node
@@ -20,15 +21,27 @@ class SignReader:
         # Initialize the publisher for homography topic
         self.pub = rospy.Publisher('signreader/homography', Image, queue_size=10)
 
+        self.frame_counter = 0
+
         # Subscribe to the camera topic
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
         rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.image_callback)
         rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.image_callback)
         rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.image_callback)
 
+        self.kp_ref, self.desc_ref, self.ref_h, self.ref_w = self.process_reference_image()
 
         # Initialize a frame counter
-        self.frame_counter = 0
+        #self.frame_counter = 0
+
+    def process_reference_image(self):
+        # Load reference image and process it
+        ref_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png")
+        ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
+        kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
+        ref_h, ref_w = ref_gray.shape[:2]
+
+        return kp_ref, desc_ref, ref_h, ref_w
 
     def read_sign(self, cv_image):
         # Convert image to grayscale
@@ -38,10 +51,10 @@ class SignReader:
         keypoints, descriptors = self.sift.detectAndCompute(gray, None)
 
         # Load reference image and process it
-        ref_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png")
-        ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
-        kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
-        ref_h, ref_w = ref_gray.shape[:2]
+        # ref_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png")
+        # ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
+        # kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
+        # ref_h, ref_w = ref_gray.shape[:2]
 
         # Set up feature matcher (FLANN-based)
         index_params = dict(algorithm=0, trees=5)
@@ -49,19 +62,19 @@ class SignReader:
         flann = cv2.FlannBasedMatcher(index_params, search_params)
 
         # Match descriptors
-        matches = flann.knnMatch(descriptors, desc_ref, k=2)
+        matches = flann.knnMatch(descriptors, self.desc_ref, k=2)
 
         # Filter good matches using Lowe's ratio test
         good_matches = []
         for m, n in matches:
-            if m.distance < 0.6 * n.distance and m.queryIdx < len(keypoints) and m.trainIdx < len(kp_ref):
+            if m.distance < 0.6 * n.distance and m.queryIdx < len(keypoints) and m.trainIdx < len(self.kp_ref):
                 good_matches.append(m)
 
         # Only proceed if enough good matches are found
         if len(good_matches) > 8:
             # Get matched keypoints in both images
             query_pts = np.float32([keypoints[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-            train_pts = np.float32([kp_ref[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+            train_pts = np.float32([self.kp_ref[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
 
             # Compute homography to map camera image sign to reference orientation
             matrix, mask = cv2.findHomography(query_pts, train_pts, cv2.RANSAC, 5.0)
@@ -69,10 +82,12 @@ class SignReader:
             # Only proceed if the matrix is valid
             if matrix is not None:
                 # Warp the region in the camera image to match the reference image perspective
-                rectified_sign = cv2.warpPerspective(gray, matrix, (ref_w, ref_h))
+                rectified_sign = cv2.warpPerspective(gray, matrix, (self.ref_w, self.ref_h))
 
+                rospy.loginfo("Sign detected")
                 return rectified_sign  # Output rectified image
 
+        rospy.loginfo("Sign not detected")
         return None  # If no rectified image can be computed
 
     def image_callback(self, data):
