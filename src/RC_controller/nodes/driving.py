@@ -71,27 +71,23 @@ class Driving:
         # rospy.loginfo("Publishing New Velocity")
         self.vel_pub.publish(vel_msg)
 
+
     def operate(self):
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0,0)
-                rospy.loginfo("Starting up...")
+                self.update_velocity(0.12,0.07,0.06,0)
+                #rospy.loginfo("Starting up...")
 
-            #elif self.state == "DRIVING":
-            else:
-                self.update_velocity(0,0,0.2,0) # put thisin startup later
-                rospy.sleep(1)
-                self.update_velocity(0,0,0,0)
-
+            elif self.state == "DRIVING":
                 if self.clue_count == 0:
                     if self.approaching_clue: # Pre operation
-                        rospy.loginfo("Approaching clue 1")
-                        rospy.sleep(1)
+                        self.update_velocity(0.0,0,0,0)
 
                     if self.clue_searching: # Post operation
-                        rospy.loginfo("Searching for clue 1")
-                        rospy.sleep(1)
+                        #rospy.loginfo("Searching for clue 1")
+                        self.update_velocity(0,0,0,0)
+                        #rospy.sleep(1)
                         continue
 
                     else: # Regular operation
