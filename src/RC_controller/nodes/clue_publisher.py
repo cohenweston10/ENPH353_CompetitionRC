@@ -7,6 +7,7 @@ from cv_bridge import CvBridge
 import cv2
 from std_msgs.msg import String
 from std_msgs.msg import Int8
+import ast
 
 class CluePublisher:
     def __init__(self):
@@ -20,7 +21,7 @@ class CluePublisher:
         self.pub_count = rospy.Publisher('/clue_count', Int8, queue_size=10)
 
         # Subscribe to the OCR output
-        rospy.Subscriber('/verified_clues', String, self.verified_clues_callback)
+        rospy.Subscriber('/ocr/processed_strings', String, self.callback)
 
         # Subscribe to the State output
         rospy.Subscriber('/state', String, self.state_callback)
@@ -28,6 +29,16 @@ class CluePublisher:
         self.publish_count = 0
         self.pub_count.publish(self.publish_count)
 
+        self.ClueToNum = {
+            "SIZE": 1, "VICTIM": 2, "CRIME": 3, "TIME": 4,
+            "PLACE": 5, "MOTIVE": 6, "WEAPON": 7, "BANDIT": 8
+        }
+
+    def callback(self, clue):
+        clues = ast.literal_eval(clue.data)
+        if clues[0] in self.ClueToNum:
+            self.submit_clue(self.ClueToNum[clues[0]], clues[1])
+            del self.ClueToNum[clues[0]]
 
     def start_comp(self):
         self.pub.publish(str('TeamRC,funky,0,START'))
@@ -36,15 +47,12 @@ class CluePublisher:
         self.pub.publish(str('TeamRC,funky,-1,END'))
 
     def submit_clue(self, clue, answer):
-        number = str(clue + 1)
-        answer = str(answer.data)
-        self.pub.publish(f'TeamRC,funky,{number},{answer}')
+        self.pub.publish(f'TeamRC,funky,{clue},{answer}')
         self.publish_count += 1
         self.pub_count.publish(self.publish_count)
-        rospy.loginfo(f"Sent {number},{answer} to score tracker")
+        rospy.loginfo(f"Sent {clue},{answer} to score tracker")
 
-    def verified_clues_callback(self, clue):
-        self.submit_clue(self.publish_count, clue)
+
 
     def state_callback(self, state):
         if state.data == "STARTUP":
