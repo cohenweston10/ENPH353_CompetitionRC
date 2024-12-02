@@ -62,8 +62,8 @@ class CompProtocol:
         while self.clue_count < 4:
             rospy.sleep(1)
             drive_time += 1
-            if drive_time >= 30:
-                break
+            # if drive_time >= 30:
+            #     break
 
         self.pub.publish("STOP")
         rospy.loginfo("Published STOP state to /state")
