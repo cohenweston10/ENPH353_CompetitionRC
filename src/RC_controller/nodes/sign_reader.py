@@ -23,7 +23,7 @@ class SignReader:
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
 
         # Initialize a frame counter
-        #self.frame_counter = 0
+        self.frame_counter = 0
 
     def process_reference_image(self):
         # Load reference image and process it
