@@ -26,7 +26,7 @@ class Driving:
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
 
-        # Subscribe t        self.approaching_clue = Trueo the State output
+        # Subscribe t        self.leaving_prev_clue = Trueo the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
         # Subscribe to the Clue Count output
@@ -37,12 +37,12 @@ class Driving:
 
 
         self.bridge = CvBridge()
-        self.rate = rospy.Rate(60)
+        self.rate = rospy.Rate(30)
 
 
         self.state = ""
         self.clue_count = 0
-        self.approaching_clue = True
+        self.leaving_prev_clue = True
         self.clue_searching = False
         self.last_clue = -5 # time since reading last clue
         
@@ -51,7 +51,7 @@ class Driving:
 
     def clue_count_callback(self, count):
         self.clue_count = count.data
-        self.approaching_clue = True
+        self.leaving_prev_clue = True
         self.clue_searching = False
         self.last_clue = time.time()
         rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
@@ -59,7 +59,7 @@ class Driving:
     def OCRcallback(self, data):
         if time.time() - self.last_clue > 15:
             self.clue_searching = True
-            self.approaching_clue = False
+            self.leaving_prev_clue = False
             rospy.loginfo(f"Searching for clue {self.clue_count + 1}, time since last clue is {time.time() - self.last_clue}")
 
     def update_velocity(self, vx, vy, vz, vaz):
@@ -72,6 +72,35 @@ class Driving:
         self.vel_pub.publish(vel_msg)
 
 
+    def move_for_duration(self, vx, vy, vz, vaz, duration):
+        """
+        Moves the quadrotor in the specified direction for a given duration and then stops.
+
+        Parameters:
+            vx (float): Linear velocity in the x direction.
+            vy (float): Linear velocity in the y direction.
+            vz (float): Linear velocity in the z direction.
+            vaz (float): Angular velocity around the z axis.
+            duration (float): Time to move in seconds.
+        """
+        vel_msg = Twist()
+        vel_msg.linear.x = vx
+        vel_msg.linear.y = vy
+        vel_msg.linear.z = vz
+        vel_msg.angular.z = vaz
+
+        # Publish the velocity command for the specified duration
+        start_time = rospy.Time.now()
+        while rospy.Time.now() - start_time < rospy.Duration(duration):
+            self.vel_pub.publish(vel_msg)
+            self.rate.sleep()
+
+        # Stop the movement after the duration
+        self.update_velocity(0, 0, 0, 0)
+        rospy.loginfo(f"Movement in direction ({vx}, {vy}, {vz}, {vaz}) completed for {duration} seconds.")
+
+
+
     def operate(self):
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
@@ -81,7 +110,7 @@ class Driving:
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
-                    if self.approaching_clue: # Pre operation
+                    if self.leaving_prev_clue: # Pre operation
                         self.update_velocity(0.0,0,0,0)
 
                     if self.clue_searching: # Post operation
@@ -91,35 +120,36 @@ class Driving:
                         continue
 
                     else: # Regular operation
-                        continue
+                        rospy.loginfo("stuck")
 
 
                 elif self.clue_count == 1:
 
-                    if self.approaching_clue: # Pre operation
-                        rospy.loginfo("Approaching clue 2")
+                    if self.leaving_prev_clue: # Pre operation
+                        self.move_for_duration(0,-0.25,0,0,1)
                         rospy.sleep(1)
+                        self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
-                        rospy.loginfo("Searching for clue 2")
-                        rospy.sleep(1)
-                        continue
+                        self.update_velocity(-0.05,0,0,0)
 
                     else: # Regular operation
-                        continue
+                        self.update_velocity(0.2,0,0,0)
 
                 elif self.clue_count == 2:
-                    if self.approaching_clue: # Pre operation
-                        rospy.loginfo("Approaching clue 3")
-                        rospy.sleep(1)
+                    if self.leaving_prev_clue: # Pre operation
+                        self.update_velocity(0,0,0,0)
+                        self.move_for_duration(0.1,0,0,0,1)
+                        self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
+                        self.update_velocity(0,0,0,0)
                         rospy.loginfo("Searching for clue 3")
                         rospy.sleep(1)
                         continue
 
                     else: # Regular operation
-                        continue
+                        self.update_velocity(0,-0.2,0,0)
 
                 elif self.clue_count == 3:
                     return
@@ -141,7 +171,7 @@ class Driving:
 
             # elif self.state == "STOP":
             #     self.update_velocity(0, 0, 0, 0)
-            #     self.approaching_clue = True
+            #     self.leaving_prev_clue = True
 
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 

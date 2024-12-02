@@ -98,8 +98,8 @@ class SignReader:
         # Increment the frame counter
         self.frame_counter += 1
 
-        # Process only every 10th frame
-        if self.frame_counter % 10 == 0:
+        # Process only every 2th frame
+        if self.frame_counter % 2 == 0:
             # Call the read_sign method to process the image
             rectified_sign = self.read_sign(cv_image)
             if rectified_sign is not None:
