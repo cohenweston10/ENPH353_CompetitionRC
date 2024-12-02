@@ -134,13 +134,26 @@ class Driving:
                         self.update_velocity(-0.05,0,0,0)
 
                     else: # Regular operation
-                        self.update_velocity(0.2,0,0,0)
+                        self.update_velocity(0.15,0,0,0)
 
                 elif self.clue_count == 2:
                     if self.leaving_prev_clue: # Pre operation
                         self.update_velocity(0,0,0,0)
-                        self.move_for_duration(0.1,0,0,0,1)
+                        self.move_for_duration(0.2,0,0,0,2)
                         self.leaving_prev_clue = False
+
+                    if self.clue_searching: # Post operation
+                        self.update_velocity(0,0.05,0,0)
+
+                    else: # Regular operation
+                        self.update_velocity(0,-0.15,0,0)
+
+                elif self.clue_count == 3:
+                    if self.leaving_prev_clue: # Pre operation
+                        self.update_velocity(0,0,0,0)
+                        rospy.loginfo("Found clue 3")
+                        # self.move_for_duration(0.1,0,0,0,2)
+                        # self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
                         self.update_velocity(0,0,0,0)
@@ -149,10 +162,7 @@ class Driving:
                         continue
 
                     else: # Regular operation
-                        self.update_velocity(0,-0.2,0,0)
-
-                elif self.clue_count == 3:
-                    return
+                        self.update_velocity(0,0,0,0)
 
                 elif self.clue_count == 4:
                     return
