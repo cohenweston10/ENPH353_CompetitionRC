@@ -16,20 +16,32 @@ THRESHOLD = 50 #value is based off of lab 2
 TOPIC_CONTROL = '/quad/cmd_vel'
 TOPIC_IMAGE_FEED = '/quad/downward_cam/down_camera/image'
 
-LINEAR_SPEED = 0.5
-ANGULAR_SPEED = 1.5
+LINEAR_SPEED = 4
+ANGULAR_SPEED = 1
+
+MAX_ANGULAR_SPEED = 5
 
 SCAN_HEIGHT = 400
 
 #return the center coordinate of the road
 #if no road is detected, return -1
-def getRoadCenterCoord(frame):
+def getRoadCenterCoord(frame, scan_height):
   grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
   frameHeight = int(frame.shape[0])
 
   #Record the horizontal positions of any pixels below the threshold
-  roadValues = np.where(grayFrame[frameHeight - SCAN_HEIGHT] > THRESHOLD)[0]
-  rospy.loginfo(f"There are {len(roadValues)} road pixels out of {frame.shape[1]} pixels in the scan row.")
+  roadValues = np.where(grayFrame[frameHeight - scan_height - 1] > THRESHOLD)[0]
+  # rospy.loginfo(f"There are {len(roadValues)} road pixels out of {frame.shape[1]} pixels in the scan row.")
+
+  rightRoadValues = roadValues[roadValues > frame.shape[1]/2]
+
+  if rightRoadValues.shape[0] >= frame.shape[1]/2 -1:
+    rightTurn = True
+  else:
+    rightTurn = False
+
+
+
 
 
   #Update the circle center coordinate for the new frame unless no road is detected
@@ -39,7 +51,7 @@ def getRoadCenterCoord(frame):
   else:
     roadCenter = -1
 
-  return roadCenter
+  return roadCenter, rightTurn
 
 
 class RoadDriving:
@@ -70,6 +82,8 @@ class RoadDriving:
         self.switch_pending = True
         self.clue_searching = False
         self.last_clue = -5
+        self.prev_error = 0
+        self.integral = 0
 
     def image_callback(self, image):
         try:
@@ -221,23 +235,25 @@ class RoadDriving:
         roadToLeft = 1
         frameCenter = float(frameWidth) / 2
 
-        roadCenterCoord = getRoadCenterCoord(filtered)
+        upperRoadCenterCoord, rightTurn = getRoadCenterCoord(filtered, SCAN_HEIGHT)
+        lowerRoadCenterCoord, _ = getRoadCenterCoord(filtered, 0)
         #rospy.loginfo(roadCenterCoord)
-        if roadCenterCoord > frameCenter:
+        if upperRoadCenterCoord > lowerRoadCenterCoord:
             roadToLeft = -1
-            rospy.loginfo("Road to the right, rotating left.")
+            # rospy.loginfo("Road to the right, rotating left.")
         else:
             roadToLeft = 1
-            rospy.loginfo("Road to the left, rotating right.")
+            # rospy.loginfo("Road to the left, rotating right.")
 
         # if seeRoad remains false, the robot will just rotate in place until it finds the road
         # roation direction is determined by roadToLeft truth value
-        if roadCenterCoord != -1:
+        if upperRoadCenterCoord != -1:
             seeRoad = True
 
         # draw a circle on the image, just like lab 2 (for debugging/visual feedback)
         try:
-            imgWithCircle = cv2.circle(filtered,(int(roadCenterCoord),int(frameHeight) - SCAN_HEIGHT), 15, (255,0,255), -1)
+            imgWithCircle1 = cv2.circle(filtered,(int(upperRoadCenterCoord),int(frameHeight) - SCAN_HEIGHT - 1), 15, (255,0,255), -1)
+            imgWithCircle = cv2.circle(filtered,(int(lowerRoadCenterCoord),int(frameHeight) - 1), 15, (255,0,255), -1)
 
             cv2.imshow("Processed Image", imgWithCircle)
             cv2.waitKey(1)
@@ -247,18 +263,34 @@ class RoadDriving:
             return
 
         # if the robot does not see road, it will roate in place
-        if roadCenterCoord == -1:
+        if upperRoadCenterCoord == -1:
             angZ = roadToLeft * ANGULAR_SPEED * -1
             self.update_velocity(0,0,0,angZ)
         else:
             # scale the rotation speed depending on how far the road is from the center
-            distanceFromCenter = np.abs(frameCenter - roadCenterCoord)
+            distanceFromCenter = np.abs(frameCenter - upperRoadCenterCoord)
             proportionAwayFromCenter = np.abs(float(distanceFromCenter) / float(frameCenter))
-            angZ = roadToLeft * proportionAwayFromCenter * ANGULAR_SPEED * 1
+            # frontBackdistance = np.abs(float(upperRoadCenterCoord) - float(lowerRoadCenterCoord))
+            # angZ = roadToLeft * np.exp(frontBackdistance/10) * proportionAwayFromCenter * ANGULAR_SPEED * 1/10
+
+            error = frameCenter - upperRoadCenterCoord
+            angZ = 0.01 * error + 0.0001 * self.integral + 0.05 * (error - self.prev_error)
+            self.prev_error = error
+            self.integral += error
+
+            angZ = np.clip(angZ, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED)
+
+            # rospy.loginfo(f"Angular speed: {angZ}, Error: {error}, Previous Error: {self.prev_error}, Integral: {self.integral}")
+
 
             # if the road moves away fromt the camera center, robot will slow down
-            linX = LINEAR_SPEED * (1-proportionAwayFromCenter)
-            #linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
+            linX = LINEAR_SPEED * (1-proportionAwayFromCenter**0.1)
+
+            linX = np.clip(linX, 0, 1)
+
+            if rightTurn:
+                angZ = -MAX_ANGULAR_SPEED
+                linX = 0.1
 
             self.update_velocity(linX,0,0,angZ)
 
