@@ -105,13 +105,14 @@ class Driving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0.12,0.07,0.06,0)
+                self.update_velocity(0,0,0.12,0)
                 #rospy.loginfo("Starting up...")
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
                     if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0.0,0,0,0)
+                        self.move_for_duration(0.12,0.07,0.06,0,3)
+                        self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
                         #rospy.loginfo("Searching for clue 1")
@@ -120,14 +121,13 @@ class Driving:
                         continue
 
                     else: # Regular operation
-                        rospy.loginfo("stuck")
+                        self.update_velocity(0.01,0,0,0)
 
 
                 elif self.clue_count == 1:
 
                     if self.leaving_prev_clue: # Pre operation
-                        self.move_for_duration(0,-0.25,0,0,1)
-                        rospy.sleep(1)
+                        self.move_for_duration(0,-0.3,0,0,1.3)
                         self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
@@ -151,27 +151,40 @@ class Driving:
                 elif self.clue_count == 3:
                     if self.leaving_prev_clue: # Pre operation
                         self.update_velocity(0,0,0,0)
-                        rospy.loginfo("Found clue 3")
-                        # self.move_for_duration(0.1,0,0,0,2)
-                        # self.leaving_prev_clue = False
+                        self.move_for_duration(-0.2,0,0,0,3.7)
+                        self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
-                        self.update_velocity(0,0,0,0)
-                        rospy.loginfo("Searching for clue 3")
-                        rospy.sleep(1)
-                        continue
+                        self.update_velocity(0.05,0.01,0,0)
 
                     else: # Regular operation
-                        self.update_velocity(0,0,0,0)
+                        self.update_velocity(0,-0.15,0,0)
 
                 elif self.clue_count == 4:
-                    return
+                    if self.leaving_prev_clue: # Pre operation
+                        self.update_velocity(0,0,0,0)
+                        self.move_for_duration(0,-0.2,0,0,1)
+                        self.leaving_prev_clue = False
+
+                    if self.clue_searching: # Post operation
+                        self.update_velocity(0.05,0,0,0)
+
+                    else: # Regular operation
+                        self.update_velocity(-0.15,0,0,0)
 
                 elif self.clue_count == 5:
-                    return
+                    if self.leaving_prev_clue: # Pre operation
+                        self.update_velocity(0,0,0,0)
+                        self.move_for_duration(0.2,0,0,0,1)
+                        self.leaving_prev_clue = False
 
+                    if self.clue_searching: # Post operation
+                        self.update_velocity(0.05,0,0,0)
+
+                    else: # Regular operation
+                        self.update_velocity(0,-0.15,0,0)
                 elif self.clue_count == 6:
-                    return
+                    self.update_velocity(0,0,0,0)
 
                 elif self.clue_count == 7:
                     return

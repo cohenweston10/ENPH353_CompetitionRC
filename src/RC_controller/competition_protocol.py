@@ -54,12 +54,12 @@ class CompProtocol:
         self.pub.publish("STARTUP")
         rospy.loginfo("Published STARTUP state to /state")
 
-        rospy.sleep(3)
+        rospy.sleep(1)
         self.pub.publish("DRIVING")
         rospy.loginfo("Published DRIVING state to /state")
 
         drive_time = 0
-        while self.clue_count < 4:
+        while self.clue_count < 8:
             rospy.sleep(1)
             drive_time += 1
             # if drive_time >= 30:

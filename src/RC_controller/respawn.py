@@ -26,7 +26,7 @@ def spawn_position(position):
         print ("Service call failed")
 
 def respawn():
-    spawn_position([5.52, 2.3, 0, 0, 0, np.sin(-np.pi/4), np.cos(-np.pi/4)])
+    spawn_position([5.52, 2.3, 0, 0, 0, 0, 0])
     rospy.loginfo("Respawn Complete")
 
 if __name__ == '__main__':
