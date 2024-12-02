@@ -26,7 +26,7 @@ class Driving:
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
 
-        # Subscribe t        self.switch_pending = Trueo the State output
+        # Subscribe t        self.approaching_clue = Trueo the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
         # Subscribe to the Clue Count output
@@ -42,30 +42,26 @@ class Driving:
 
         self.state = ""
         self.clue_count = 0
-        self.switch_pending = True
+        self.approaching_clue = True
         self.clue_searching = False
-        self.last_clue = -5
+        self.last_clue = -5 # time since reading last clue
         
     def state_callback(self, state):
         self.state = state.data
 
     def clue_count_callback(self, count):
         self.clue_count = count.data
-        self.switch_pending = True
+        self.approaching_clue = True
         self.clue_searching = False
         self.last_clue = time.time()
 
     def OCRcallback(self, data):
-        if time.time() - self.last_clue > 75:
+        if time.time() - self.last_clue > 15:
             self.clue_searching = True
+            self.approaching_clue = False
             rospy.loginfo(f"Searching for clue {self.clue_count + 1}, time since last clue is {time.time() - self.last_clue}")
 
-    def update_velocity(self, forward, sideways, up, yaw):
-        vx = forward * 0.5  # Forward/Backward
-        vy = sideways * 0.5  # Left/Right (corrected)
-        vz = up * 0.5  # Up/Down
-        vaz = yaw  # Rotate left/right
-
+    def update_velocity(self, vx, vy, vz, vaz):
         vel_msg = Twist()
         vel_msg.linear.x = vx
         vel_msg.linear.y = vy
@@ -78,55 +74,29 @@ class Driving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0.5,0)
+                #self.update_velocity(0,0,0.5,0)
+                rospy.loginfo("Starting up...")
 
-            elif self.state == "DRIVING":
+            #elif self.state == "DRIVING":
+            else:
 
                 if self.clue_count == 0:
-                    if self.switch_pending == True: # Pre operation
-                        rospy.loginfo("Swapping Left")
-                        self.sideSwap("ToLeft")
-                        rospy.sleep(1)
+                    if self.approaching_clue: # Pre operation
+                        rospy.loginfo("Approaching for clue 1")
 
-                        self.switch_pending = False
-
-                    if self.clue_searching == True: # Post operation
-                        self.update_velocity(0.1,0,0,0)
+                    if self.clue_searching: # Post operation
+                        rospy.loginfo("Searching for clue 1")
+                        continue
 
                     else: # Regular operation
-                        self.update_velocity(0.2,0,0,0)
+                        continue
 
 
                 elif self.clue_count == 1:
-                    if self.switch_pending == True: # Pre operation
-                        rospy.loginfo("Swapping Right")
-                        self.sideSwap("ToRight")
-                        rospy.sleep(3)
-
-                        self.switch_pending = False
-                        
-                    if self.clue_searching == True: # Post operation
-                        self.update_velocity(0.1,0,0,0)
-
-                    else: # Regular operation
-                        self.update_velocity(0.65,0,0,0) 
-
-
+                    return
 
                 elif self.clue_count == 2:
-                    if self.switch_pending == True: # Pre operation
-                        rospy.loginfo("Doing state 2 pre-operation")
-                        self.localize2()
-
-                        self.switch_pending = False
-
-                    if self.clue_searching == True: # Post operation
-                        # TODO state 2 post-operation
-                        rospy.loginfo("Looking for sign 3")
-
-                    else:
-                        # TODO state 2 regular operation
-                        rospy.loginfo("In regular state 2 operation")
+                    return
 
                 elif self.clue_count == 3:
                     return
@@ -146,9 +116,9 @@ class Driving:
                 elif self.clue_count == 8:
                     return
 
-            elif self.state == "STOP":
-                self.update_velocity(0, 0, 0, 0)
-                self.switch_pending = True
+            # elif self.state == "STOP":
+            #     self.update_velocity(0, 0, 0, 0)
+            #     self.approaching_clue = True
 
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 
