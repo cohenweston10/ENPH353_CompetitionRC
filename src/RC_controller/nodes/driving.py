@@ -83,9 +83,11 @@ class Driving:
                 if self.clue_count == 0:
                     if self.approaching_clue: # Pre operation
                         rospy.loginfo("Approaching for clue 1")
+                        rospy.sleep(1)
 
                     if self.clue_searching: # Post operation
                         rospy.loginfo("Searching for clue 1")
+                        rospy.sleep(1)
                         continue
 
                     else: # Regular operation
