@@ -40,7 +40,7 @@ class SignReader:
         ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
         kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
         ref_h, ref_w = ref_gray.shape[:2]
-
+        rospy.loginfo("REFERENCE IMAGE LOADED")
         return kp_ref, desc_ref, ref_h, ref_w
 
     def read_sign(self, cv_image):
@@ -84,10 +84,10 @@ class SignReader:
                 # Warp the region in the camera image to match the reference image perspective
                 rectified_sign = cv2.warpPerspective(gray, matrix, (self.ref_w, self.ref_h))
 
-                rospy.loginfo("Sign detected")
+                #rospy.loginfo("Sign detected")
                 return rectified_sign  # Output rectified image
 
-        rospy.loginfo("Sign not detected")
+        #rospy.loginfo("Sign not detected")
         return None  # If no rectified image can be computed
 
     def image_callback(self, data):

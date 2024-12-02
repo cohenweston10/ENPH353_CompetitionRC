@@ -25,8 +25,8 @@
       </node>
 
       <node pkg="RC_controller"
-         type="road_driving.py"
-         name="road_driving" 
+         type="driving.py"
+         name="driving" 
          output="screen">
       </node>
 

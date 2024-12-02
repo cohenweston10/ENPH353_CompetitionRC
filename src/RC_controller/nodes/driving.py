@@ -54,6 +54,7 @@ class Driving:
         self.approaching_clue = True
         self.clue_searching = False
         self.last_clue = time.time()
+        rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
 
     def OCRcallback(self, data):
         if time.time() - self.last_clue > 15:
@@ -74,15 +75,18 @@ class Driving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                #self.update_velocity(0,0,0.5,0)
+                self.update_velocity(0,0,0,0)
                 rospy.loginfo("Starting up...")
 
             #elif self.state == "DRIVING":
             else:
+                self.update_velocity(0,0,0.2,0) # put thisin startup later
+                rospy.sleep(1)
+                self.update_velocity(0,0,0,0)
 
                 if self.clue_count == 0:
                     if self.approaching_clue: # Pre operation
-                        rospy.loginfo("Approaching for clue 1")
+                        rospy.loginfo("Approaching clue 1")
                         rospy.sleep(1)
 
                     if self.clue_searching: # Post operation
@@ -95,10 +99,31 @@ class Driving:
 
 
                 elif self.clue_count == 1:
-                    return
+
+                    if self.approaching_clue: # Pre operation
+                        rospy.loginfo("Approaching clue 2")
+                        rospy.sleep(1)
+
+                    if self.clue_searching: # Post operation
+                        rospy.loginfo("Searching for clue 2")
+                        rospy.sleep(1)
+                        continue
+
+                    else: # Regular operation
+                        continue
 
                 elif self.clue_count == 2:
-                    return
+                    if self.approaching_clue: # Pre operation
+                        rospy.loginfo("Approaching clue 3")
+                        rospy.sleep(1)
+
+                    if self.clue_searching: # Post operation
+                        rospy.loginfo("Searching for clue 3")
+                        rospy.sleep(1)
+                        continue
+
+                    else: # Regular operation
+                        continue
 
                 elif self.clue_count == 3:
                     return
