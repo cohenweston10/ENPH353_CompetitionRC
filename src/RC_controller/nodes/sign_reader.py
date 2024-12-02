@@ -23,7 +23,16 @@ class SignReader:
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
 
         # Initialize a frame counter
-        self.frame_counter = 0
+        #self.frame_counter = 0
+
+    def process_reference_image(self):
+        # Load reference image and process it
+        ref_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png")
+        ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
+        kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
+        ref_h, ref_w = ref_gray.shape[:2]
+        rospy.loginfo("REFERENCE IMAGE LOADED")
+        return kp_ref, desc_ref, ref_h, ref_w
 
     def read_sign(self, cv_image):
         # Convert image to grayscale
@@ -78,8 +87,8 @@ class SignReader:
         # Increment the frame counter
         self.frame_counter += 1
 
-        # Process only every 10th frame
-        if self.frame_counter % 10 == 0:
+        # Process only every 2th frame
+        if self.frame_counter % 2 == 0:
             # Call the read_sign method to process the image
             rectified_sign, H = self.read_sign(cv_image)
             if rectified_sign is not None:
