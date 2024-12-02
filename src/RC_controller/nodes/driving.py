@@ -105,7 +105,7 @@ class Driving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                self.update_velocity(0,0,0.12,0)
+                self.update_velocity(0,0,0.11,0)
                 #rospy.loginfo("Starting up...")
 
             elif self.state == "DRIVING":
@@ -128,6 +128,7 @@ class Driving:
 
                     if self.leaving_prev_clue: # Pre operation
                         self.move_for_duration(0,-0.3,0,0,1.3)
+                        self.move_for_duration(2,0,0,0,1)
                         self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
@@ -152,6 +153,7 @@ class Driving:
                     if self.leaving_prev_clue: # Pre operation
                         self.update_velocity(0,0,0,0)
                         self.move_for_duration(-0.2,0,0,0,3.7)
+                        self.move_for_duration(0,-3,0,0,1)
                         self.leaving_prev_clue = False
 
                     if self.clue_searching: # Post operation
