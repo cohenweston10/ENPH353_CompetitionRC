@@ -183,11 +183,28 @@ class Driving:
 
                     else: # Regular operation
                         self.update_velocity(0,-0.15,0,0)
+
                 elif self.clue_count == 6:
-                    self.update_velocity(0,0,0,0)
+                    if self.leaving_prev_clue: # Pre operation
+                        self.update_velocity(0,0,0,0)
+                        self.move_for_duration(0,-0.23,0.04,0,3)
+                        self.leaving_prev_clue = False
+                        clearedHill = False
+
+                    if self.clue_searching: # Post operation
+                        self.update_velocity(-0.05,0,0,0)
+
+                    else: # Regular operation
+                        if not clearedHill:
+                            self.move_for_duration(0.2,0,0,0,12)
+                            self.move_for_duration(0.2,0,-0.2,0,0.5)
+                            clearedHill = True
+                        else:
+                            self.update_velocity(0.15,0,0,0)
+
 
                 elif self.clue_count == 7:
-                    return
+                    self.update_velocity(0,0,0,0)
 
                 elif self.clue_count == 8:
                     return
