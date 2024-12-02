@@ -33,8 +33,8 @@ class ClueVerifier:
 
     def callback(self, clue):
         clues = ast.literal_eval(clue.data)
-        if self.ClueToNum.get(clues[0]) == self.clue_count + 1:
-            self.pub_score.publish(clues[1])
+        if clues[0] in self.ClueToNum.keys():
+            self.pub_score.publish(clues)
 
     def clue_count_callback(self, count):
         self.clue_count = count.data
