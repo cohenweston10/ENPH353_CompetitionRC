@@ -26,8 +26,12 @@ class CluePublisher:
         # Subscribe to the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
+        # Subscribe to Ready output
+        rospy.Subscriber('/ready', String, self.ready_callback)
+
         self.publish_count = 0
         self.pub_count.publish(self.publish_count)
+        self.ready = ""
 
         self.ClueToNum = {
             "SIZE": 1, "VICTIM": 2, "CRIME": 3, "TIME": 4,
@@ -35,10 +39,14 @@ class CluePublisher:
         }
 
     def callback(self, clue):
-        clues = ast.literal_eval(clue.data)
-        if clues[0] in self.ClueToNum:
-            self.submit_clue(self.ClueToNum[clues[0]], clues[1])
-            del self.ClueToNum[clues[0]]
+        if self.ready == "READY":
+            clues = ast.literal_eval(clue.data)
+            if clues[0] in self.ClueToNum:
+                self.submit_clue(self.ClueToNum[clues[0]], clues[1])
+                del self.ClueToNum[clues[0]]
+
+    def ready_callback(self, data):
+        self.ready = data.data
 
     def start_comp(self):
         self.pub.publish(str('TeamRC,funky,0,START'))
