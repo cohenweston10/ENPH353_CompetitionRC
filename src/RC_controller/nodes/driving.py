@@ -140,12 +140,12 @@ class Driving:
             self.move_for_duration(0,0.45,0,0,2)
 
     def go_sign3(self):
-        self.move_for_duration(0,-0.5,0,0,2.75)
-        self.move_for_duration(0.75,0,0,0,1.33)
+        self.move_for_duration(0,-0.5,0,0,2.85)
+        self.move_for_duration(0.5,0,0,0,1.95)
 
     def go_sign3r(self):
-        self.move_for_duration(-0.75,0,0,0,1.33)
-        self.move_for_duration(0,0.5,0,0,2.75)
+        self.move_for_duration(-0.5,0,0,0,1.95)
+        self.move_for_duration(0,0.5,0,0,2.85)
 
 
     def go_sign4(self):
