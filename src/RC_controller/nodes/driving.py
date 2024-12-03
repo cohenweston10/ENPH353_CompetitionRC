@@ -36,6 +36,12 @@ class Driving:
         # Subscribe to the OCR output
         # rospy.Subscriber('/ocr/processed_strings', String, self.OCRcallback)
 
+        # Subscribe to the camera topics
+        rospy.Subscriber('/quad/front_cam/camera/image', Image, self.front_image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.right_image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.left_image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.back_image_callback)
+
 
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
@@ -44,17 +50,25 @@ class Driving:
         self.state = ""
         self.clue_count = 0
         self.leaving_prev_clue = True
-        self.clue_searching = False
-        self.last_clue = -5 # time since reading last clue
+        self.movement_complete = False
+
+        # init images
+        self.front_cam_image = None
+        self.right_cam_image = None
+        self.left_cam_image = None
+        self.back_cam_image = None
+
+        # keypoints and descriptors for ref image
+        self.sift = cv2.SIFT_create()
+        self.reference_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png", cv2.IMREAD_GRAYSCALE)
+        self.ref_keypoints, self.ref_descriptors = self.sift.detectAndCompute(self.reference_image, None)
         
     def state_callback(self, state):
         self.state = state.data
 
     def clue_count_callback(self, count):
         self.clue_count = count.data
-        self.leaving_prev_clue = True
-        self.clue_searching = False
-        self.last_clue = time.time()
+        self.movement_complete = False
         rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
 
     def OCRcallback(self, data):
@@ -62,6 +76,46 @@ class Driving:
             self.clue_searching = True
             self.leaving_prev_clue = False
             rospy.loginfo(f"Searching for clue {self.clue_count + 1}, time since last clue is {time.time() - self.last_clue}")
+
+    def front_image_callback(self, image):
+        try:
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.front_cam_image = cv_image.astype(np.uint8)        
+        except CvBridgeError as e:
+            rospy.loginfo(e)
+            return
+
+    def right_image_callback(self, image):
+        try:
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.right_cam_image = cv_image.astype(np.uint8)        
+        except CvBridgeError as e:
+            rospy.loginfo(e)
+            return
+
+    def left_image_callback(self, image):
+        try:
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.left_cam_image = cv_image.astype(np.uint8)        
+        except CvBridgeError as e:
+            rospy.loginfo(e)
+            return
+
+    def back_image_callback(self, image):
+        try:
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.back_cam_image = cv_image.astype(np.uint8)        
+        except CvBridgeError as e:
+            rospy.loginfo(e)
+            return
 
     def update_velocity(self, vx, vy, vz, vaz):
         vel_msg = Twist()
@@ -213,113 +267,170 @@ class Driving:
                 #self.update_velocity(0,0,0.01,0)
                 rospy.loginfo("Starting up...")
 
+
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.go_sign1()
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        #rospy.loginfo("Searching for clue 1")
-                        self.update_velocity(0,0,0,0)
-                        #rospy.sleep(1)
-                        continue
-
+                    if self.movement_complete: # Post operation
+                        rospy.sleep(0.01) # do nothing
                     else: # Regular operation
-                        self.update_velocity(0.0,0,-0.01,0)
+                        self.go_sign1()
+                        self.movement_complete = True
 
 
                 elif self.clue_count == 1:
-
-                    if self.leaving_prev_clue: # Pre operation
-                        self.go_sign2()
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(-0.05,0,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.front_cam_image, "FRONT")
                     else: # Regular operation
-                        self.update_velocity(0,0,0,0)
+                        self.go_sign2()
+                        self.movement_complete = True
+
 
                 elif self.clue_count == 2:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0,0,0,0)
-                        self.move_for_duration(0.2,0,0,0,2)
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(0,0.05,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.right_cam_image, "RIGHT")
                     else: # Regular operation
-                        self.update_velocity(0,-0.15,0,0)
+                        self.go_sign3()
+                        self.movement_complete = True
+
 
                 elif self.clue_count == 3:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0,0,0,0)
-                        self.move_for_duration(-0.2,0,0,0,3.7)
-                        self.move_for_duration(0,-3,0,0,1)
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(0.05,0.01,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.back_cam_image, "BACK")
                     else: # Regular operation
-                        self.update_velocity(0,-0.15,0,0)
+                        self.go_sign4()
+                        self.movement_complete = True
+
 
                 elif self.clue_count == 4:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0,0,0,0)
-                        self.move_for_duration(0,-0.2,0,0,1)
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(0.05,0,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.front_cam_image, "FRONT")
                     else: # Regular operation
-                        self.update_velocity(-0.15,0,0,0)
+                        self.go_sign5()
+                        self.movement_complete = True
+
 
                 elif self.clue_count == 5:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0,0,0,0)
-                        self.move_for_duration(0.2,0,0,0,1)
-                        self.leaving_prev_clue = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(0.05,0,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.right_cam_image, "RIGHT")
                     else: # Regular operation
-                        self.update_velocity(0,-0.15,0,0)
+                        self.go_sign6()
+                        self.movement_complete = True
+
 
                 elif self.clue_count == 6:
-                    if self.leaving_prev_clue: # Pre operation
-                        self.update_velocity(0,0,0,0)
-                        self.move_for_duration(0,-0.23,0.04,0,3)
-                        self.leaving_prev_clue = False
-                        clearedHill = False
-
-                    if self.clue_searching: # Post operation
-                        self.update_velocity(-0.05,0,0,0)
-
+                    if self.movement_complete: # Post operation
+                        self.localize(self.left_cam_image, "LEFT")
                     else: # Regular operation
-                        if not clearedHill:
-                            self.move_for_duration(0.2,0,0,0,12)
-                            self.move_for_duration(0.2,0,-0.2,0,0.5)
-                            clearedHill = True
-                        else:
-                            self.update_velocity(0.15,0,0,0)
+                        self.go_sign7()
+                        self.movement_complete = True
 
 
                 elif self.clue_count == 7:
-                    self.update_velocity(0,0,0,0)
+                    if self.movement_complete: # Post operation
+                        self.localize(self.left_cam_image, "LEFT")
+                    else: # Regular operation
+                        self.go_sign8()
+                        self.movement_complete = True
 
-                elif self.clue_count == 8:
-                    return
 
-            # elif self.state == "STOP":
-            #     self.update_velocity(0, 0, 0, 0)
-            #     self.leaving_prev_clue = True
+            elif self.state == "STOP":
+                self.update_velocity(0, 0, 0, 0)
+                self.leaving_prev_clue = True
 
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
+
+
+    def localize(self, cam, direction):
+        cv_image = cam
+
+        if cv_image is None or cv_image.size == 0:
+            rospy.logwarn("No image data received.")
+            return
+
+        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+
+        # Detect keypoints and descriptors in the current frame
+        kp, des = self.sift.detectAndCompute(gray, None)
+
+        if des is None or len(des) == 0:
+            rospy.logwarn("No descriptors found in the current frame.")
+            return
+
+        if self.ref_descriptors is None or len(self.ref_descriptors) == 0:
+            rospy.logwarn("No reference descriptors available.")
+            return
+
+        # Set up feature matcher (FLANN-based)
+        index_params = dict(algorithm=0, trees=5)
+        search_params = dict()
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+        # Match descriptors
+        matches = flann.knnMatch(des, self.ref_descriptors, k=2)
+
+        # Filter good matches using Lowe's ratio test
+        good_matches = []
+        for m, n in matches:
+            if m.distance < 0.6 * n.distance and m.queryIdx < len(kp) and m.trainIdx < len(self.ref_keypoints):
+                good_matches.append(m)
+
+        # Validate that both keypoints and matches exist
+        if len(self.ref_keypoints) == 0 or len(kp) == 0:
+            rospy.logwarn("No keypoints detected in reference or current frame.")
+            return
+
+        if len(good_matches) == 0:
+            rospy.logwarn("No good matches found.")
+            return
+
+        # Draw matches with valid indices
+        try:
+            match_img = cv2.drawMatches(self.reference_image, self.ref_keypoints, gray, kp, good_matches[:10], None)
+            cv2.imshow("Matches", match_img)
+            cv2.waitKey(1)
+        except Exception as e:
+            rospy.logerr(f"Error while drawing matches: {e}")
+
+        # Estimate pose if enough matches are found
+        if len(good_matches) > 8:
+            src_pts = np.float32([self.ref_keypoints[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+            dst_pts = np.float32([kp[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+
+            # Compute homography
+            H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            if H is not None:
+                # Find the center of the matched reference image in the current frame
+                h, w = self.reference_image.shape
+                ref_center = np.array([[w / 2, h / 2]], dtype=np.float32).reshape(-1, 1, 2)
+                ref_center_transformed = cv2.perspectiveTransform(ref_center, H)
+
+                # Current frame center
+                frame_center_x = gray.shape[1] / 2
+                frame_center_y = gray.shape[0] / 2
+
+                # Define the target position slightly left of the center
+                target_x = frame_center_x
+                target_y = frame_center_y
+
+                # Difference between transformed reference center and the target position
+                if direction == "FRONT":
+                    diff_x = ref_center_transformed[0, 0, 0] - target_x
+                    self.update_velocity(0, -0.001 * diff_x, 0, 0)
+                elif direction == "BACK":
+                    diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
+                    self.update_velocity(0, -0.001 * diff_x, 0, 0)
+                elif direction == "RIGHT":
+                    diff_x = ref_center_transformed[0, 0, 0] - target_x
+                    self.update_velocity(-0.001 * diff_x, 0, 0, 0)
+                elif direction == "LEFT":
+                    diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
+                    self.update_velocity(-0.001 * diff_x, 0, 0, 0)
+
+                rospy.loginfo(f"Localization velocitiy published: {-0.001 * diff_x}")
+            else:
+                rospy.logwarn("Homography matrix could not be computed.")
+        else:
+            self.update_velocity(0,0,0,0)
 
     def start(self):
         # Start the ROS loop
