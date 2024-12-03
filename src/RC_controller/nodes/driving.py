@@ -46,6 +46,7 @@ class Driving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
 
+        self.localize_duration = 2
 
         self.state = ""
         self.clue_count = 0
@@ -171,6 +172,15 @@ class Driving:
         self.update_velocity(0, 0, 0, 0)
         rospy.loginfo(f"Movement completed with smooth acceleration and deceleration for {duration} seconds.")
 
+    def localize_for(self, cam, direction, duration):
+        start_time = rospy.Time.now()
+        elapsed_time = 0
+
+        while elapsed_time < duration and not rospy.is_shutdown():
+            elapsed_time = (rospy.Time.now() - start_time).to_sec()
+            self.localize(cam, direction) 
+
+        self.update_velocity(0,0,0,0)
 
     def startup(self):
         self.move_for_duration(0,0,0.20,0,1.5)
@@ -269,7 +279,7 @@ class Driving:
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
             if self.state == "STARTUP":
-                #self.update_velocity(0,0,0.01,0)
+                self.startup()
                 rospy.loginfo("Starting up...")
 
 
@@ -284,7 +294,7 @@ class Driving:
 
                 elif self.clue_count == 1:
                     if self.movement_complete: # Post operation
-                        self.localize(self.front_cam_image, "FRONT")
+                        self.localize_for(self.front_cam_image, "FRONT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign2()
                         self.movement_complete = True
@@ -292,7 +302,7 @@ class Driving:
 
                 elif self.clue_count == 2:
                     if self.movement_complete: # Post operation
-                        self.localize(self.right_cam_image, "RIGHT")
+                        self.localize_for(self.right_cam_image, "RIGHT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign3()
                         self.movement_complete = True
@@ -300,7 +310,7 @@ class Driving:
 
                 elif self.clue_count == 3:
                     if self.movement_complete: # Post operation
-                        self.localize(self.back_cam_image, "BACK")
+                        self.localize_for(self.back_cam_image, "BACK", self.localize_duration)
                     else: # Regular operation
                         self.go_sign4()
                         self.movement_complete = True
@@ -308,7 +318,7 @@ class Driving:
 
                 elif self.clue_count == 4:
                     if self.movement_complete: # Post operation
-                        self.localize(self.front_cam_image, "FRONT")
+                        self.localize_for(self.front_cam_image, "FRONT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign5()
                         self.movement_complete = True
@@ -316,7 +326,7 @@ class Driving:
 
                 elif self.clue_count == 5:
                     if self.movement_complete: # Post operation
-                        self.localize(self.right_cam_image, "RIGHT")
+                        self.localize_for(self.right_cam_image, "RIGHT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign6()
                         self.movement_complete = True
@@ -324,7 +334,7 @@ class Driving:
 
                 elif self.clue_count == 6:
                     if self.movement_complete: # Post operation
-                        self.localize(self.left_cam_image, "LEFT")
+                        self.localize_for(self.left_cam_image, "LEFT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign7()
                         self.movement_complete = True
@@ -332,7 +342,7 @@ class Driving:
 
                 elif self.clue_count == 7:
                     if self.movement_complete: # Post operation
-                        self.localize(self.left_cam_image, "LEFT")
+                        self.localize_for(self.left_cam_image, "LEFT", self.localize_duration)
                     else: # Regular operation
                         self.go_sign8()
                         self.movement_complete = True
@@ -390,9 +400,10 @@ class Driving:
 
         # Draw matches with valid indices
         try:
-            match_img = cv2.drawMatches(self.reference_image, self.ref_keypoints, gray, kp, good_matches[:10], None)
-            cv2.imshow("Matches", match_img)
-            cv2.waitKey(1)
+            # match_img = cv2.drawMatches(self.reference_image, self.ref_keypoints, gray, kp, good_matches[:10], None)
+            # cv2.imshow("Matches", match_img)
+            # cv2.waitKey(1)
+            x = 2
         except Exception as e:
             rospy.logerr(f"Error while drawing matches: {e}")
 
@@ -433,7 +444,8 @@ class Driving:
 
                 rospy.loginfo(f"Localization velocitiy published: {-0.001 * diff_x}")
             else:
-                rospy.logwarn("Homography matrix could not be computed.")
+                # rospy.logwarn("Homography matrix could not be computed.")
+                x = 2
         else:
             self.update_velocity(0,0,0,0)
 
@@ -500,5 +512,5 @@ if __name__ == '__main__':
     # Create an instance of the Driving class
     driving = Driving()
     rospy.loginfo("Road Driving Node Initialized")
-    driving.listen_for_commands()
-    #driving.start()
+    #driving.listen_for_commands()
+    driving.start()

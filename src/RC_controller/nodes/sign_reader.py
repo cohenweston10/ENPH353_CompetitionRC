@@ -106,9 +106,9 @@ class SignReader:
                     self.pub.publish(rectified_img_msg)
 
                 # uncomment to display transformed sign for debugging purspose 
-                cv2.putText(rectified_sign, f"Det: {det_H:.2f}", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                cv2.imshow("Rectified Sign", rectified_sign)
-                cv2.waitKey(1)
+                # cv2.putText(rectified_sign, f"Det: {det_H:.2f}", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                # cv2.imshow("Rectified Sign", rectified_sign)
+                # cv2.waitKey(1)
 
     def start(self):
         # Start the ROS loop

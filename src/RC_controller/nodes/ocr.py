@@ -87,8 +87,8 @@ class OCRNode:
         cv2.rectangle(mask, (graphic_region2[0], graphic_region2[1]), (graphic_region2[2], graphic_region2[3]), 0, -1)
         binary = cv2.bitwise_and(binary, binary, mask=mask)
 
-        cv2.imshow("mask", binary)
-        cv2.waitKey(1)
+        # cv2.imshow("mask", binary)
+        # cv2.waitKey(1)
 
         # Perform morphological operations to clean up noise
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
