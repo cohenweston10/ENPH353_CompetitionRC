@@ -383,7 +383,7 @@ class Driving:
 
 
                 elif current_clue_count == 5:
-                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < 3: # Post operation
                         self.localize(self.right_cam_image, "RIGHT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
