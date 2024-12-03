@@ -81,9 +81,14 @@ class OCRNode:
 
         # Mask the known graphic region (update coordinates as needed)
         mask = np.ones(binary.shape, dtype=np.uint8) * 255
-        graphic_region = (0, 140, 0, 180)  # Replace with actual region of the graphic
-        cv2.rectangle(mask, (graphic_region[0], graphic_region[1]), (graphic_region[2], graphic_region[3]), 0, -1)
+        graphic_region1 = (0, 0, 240, 200)  # Replace with actual region of the graphic
+        graphic_region2 = (240, 150, 280, 200)  # Replace with actual region of the graphic
+        cv2.rectangle(mask, (graphic_region1[0], graphic_region1[1]), (graphic_region1[2], graphic_region1[3]), 0, -1)
+        cv2.rectangle(mask, (graphic_region2[0], graphic_region2[1]), (graphic_region2[2], graphic_region2[3]), 0, -1)
         binary = cv2.bitwise_and(binary, binary, mask=mask)
+
+        cv2.imshow("mask", binary)
+        cv2.waitKey(1)
 
         # Perform morphological operations to clean up noise
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))

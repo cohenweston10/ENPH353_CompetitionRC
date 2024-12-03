@@ -72,7 +72,7 @@ imu_sub = rospy.Subscriber("/quad/raw_imu", Imu, imu_callback)
 # Publishers
 vel_pub = rospy.Publisher('/quad/cmd_vel', Twist, queue_size=1)
 
-linMult = 0.2
+linMult = 0.4
 angMult = 1.0
 
 # Send velocity based on key states
