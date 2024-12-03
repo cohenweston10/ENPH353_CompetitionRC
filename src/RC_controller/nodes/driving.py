@@ -188,6 +188,16 @@ class Driving:
     def go_tunnelr(self):
         self.move_for_duration(0,-0.5,-0.25,0,2.5)
 
+    def go_sign8(self):
+        self.move_for_duration(-1.2,0,2.05,0,1.4)
+        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(0,1.8,0,0,2.15)
+
+    def go_sign8r(self):
+        self.move_for_duration(0,-1.8,0,0,2.15)
+        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(1.2,0,-2.05,0,1.4)
+
 
 
     def operate(self):
@@ -347,6 +357,10 @@ class Driving:
                     self.go_tunnel()
                 elif command == 'go_tunnelr':
                     self.go_tunnelr()   
+                elif command == 'go_sign8':
+                    self.go_sign8()
+                elif command == 'go_sign8r':
+                    self.go_sign8r()    
                 elif command == 'exit':
                     rospy.loginfo("Exiting command listener.")
                     break
