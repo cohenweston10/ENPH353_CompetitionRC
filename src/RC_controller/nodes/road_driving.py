@@ -40,10 +40,6 @@ def getRoadCenterCoord(frame, scan_height):
   else:
     rightTurn = False
 
-
-
-
-
   #Update the circle center coordinate for the new frame unless no road is detected
   if not roadValues.size == 0:
     roadCenter = np.mean(roadValues)
@@ -61,7 +57,7 @@ class RoadDriving:
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
 
-        # Subscribe t        self.switch_pending = Trueo the State output
+        # Subscribe to self.switch_pending = True the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
         # Subscribe to the Clue Count output
@@ -74,16 +70,25 @@ class RoadDriving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(60)
 
-        self.image_sub = rospy.Subscriber(TOPIC_IMAGE_FEED,Image,self.image_callback)
+        # Subscribe to downward facing cam
+        rospy.Subscriber(TOPIC_IMAGE_FEED,Image,self.image_callback)
+
+        # Subscribe to forward facings camera
+        rospy.Subscriber('/quad/front_cam/camera/image', Image, self.front_image_callback)
 
         self.state = ""
         self.clue_count = 0
         self.image = None
+        self.front_image = None
         self.switch_pending = True
         self.clue_searching = False
         self.last_clue = -5
         self.prev_error = 0
         self.integral = 0
+
+        self.sift = cv2.SIFT_create()
+        self.reference_image2 = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png", cv2.IMREAD_GRAYSCALE)
+        self.ref_keypoints2, self.ref_descriptors2 = self.sift.detectAndCompute(self.reference_image2, None)
 
     def image_callback(self, image):
         try:
@@ -91,6 +96,16 @@ class RoadDriving:
             cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
             # Ensure the image is in the correct depth
             self.image = cv_image.astype(np.uint8)        
+        except CvBridgeError as e:
+            rospy.loginfo(e)
+            return
+            
+    def front_image_callback(self, image):
+        try:
+            # Convert the ROS image message to OpenCV format with the correct encoding
+            cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+            # Ensure the image is in the correct depth
+            self.front_image = cv_image.astype(np.uint8)        
         except CvBridgeError as e:
             rospy.loginfo(e)
             return
@@ -130,7 +145,7 @@ class RoadDriving:
                 self.update_velocity(0,0,0.5,0)
 
             elif self.state == "DRIVING":
-                self.lineFollow()
+                self.localize2()
 
             elif self.state == "DRIVING1": ##TESTING##
 
@@ -295,66 +310,88 @@ class RoadDriving:
             self.update_velocity(linX,0,0,angZ)
 
     def localize2(self):
-        centered = False
+        cv_image = self.front_image
 
-        while (not centered):
-            cv_image = self.image 
+        if cv_image is None or cv_image.size == 0:
+            rospy.logwarn("No image data received.")
+            return
 
-            if cv_image is None or cv_image.size == 0:
-                return     
+        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
-            # It converts the BGR color space of image to HSV color space 
-            hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV) 
+        # Detect keypoints and descriptors in the current frame
+        kp, des = self.sift.detectAndCompute(gray, None)
 
-            # Threshold of blue in HSV space 
-            lower_blue = np.array([80, 50, 160]) 
-            upper_blue = np.array([180, 255, 255])
+        if des is None or len(des) == 0:
+            rospy.logwarn("No descriptors found in the current frame.")
+            return
 
-            # preparing the mask to overlay 
-            mask = cv2.inRange(hsv, lower_blue, upper_blue) 
+        if self.ref_descriptors2 is None or len(self.ref_descriptors2) == 0:
+            rospy.logwarn("No reference descriptors available.")
+            return
 
-            # The black region in the mask has the value of 0, 
-            # so when multiplied with original image removes all non-blue regions 
-            blue = cv2.bitwise_and(cv_image, cv_image, mask = mask) 
+        # Set up feature matcher (FLANN-based)
+        index_params = dict(algorithm=0, trees=5)
+        search_params = dict()
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-            blueHeight = blue.shape[0]
-            blueWidth = blue.shape[1]
+        # Match descriptors
+        matches = flann.knnMatch(des, self.ref_descriptors2, k=2)
 
-            midHeight = blueHeight // 2
-            midWidth = blueWidth // 2
+        # Filter good matches using Lowe's ratio test
+        good_matches = []
+        for m, n in matches:
+            if m.distance < 0.6 * n.distance and m.queryIdx < len(kp) and m.trainIdx < len(self.ref_keypoints2):
+                good_matches.append(m)
 
-            horizontal = np.array(np.where(blue[midHeight] > 10))
-            hloc = sum(horizontal) / len(horizontal)
-            vertical = np.array(np.where(blue[:][midWidth] > 10))
-            vloc = sum(vertical) / len(vertical)
-            
-            range = 25
+        # Validate that both keypoints and matches exist
+        if len(self.ref_keypoints2) == 0 or len(kp) == 0:
+            rospy.logwarn("No keypoints detected in reference or current frame.")
+            return
 
-            if vloc < midHeight - range:
-                self.update_velocity(0.5,0,0,0)
-                rospy.sleep(0.25)
-                self.update_velocity(0,0,0,0)
-            elif vloc > midHeight + range: 
-                self.update_velocity(-0.5,0,0,0)
-                rospy.sleep(0.25)
-                self.update_velocity(0,0,0,0)
-            elif hloc < midWidth - range:
-                self.update_velocity(0,-0.5,0,0)
-                rospy.sleep(0.25)
-                self.update_velocity(0,0,0,0)
-            elif hloc > midWidth + range:
-                self.update_velocity(0,0.5,0,0)
-                rospy.sleep(0.25)
-                self.update_velocity(0,0,0,0)
+        if len(good_matches) == 0:
+            rospy.logwarn("No good matches found.")
+            return
+
+        # Draw matches with valid indices
+        try:
+            match_img = cv2.drawMatches(self.reference_image2, self.ref_keypoints2, gray, kp, good_matches[:10], None)
+            cv2.imshow("Matches", match_img)
+            cv2.waitKey(1)
+        except Exception as e:
+            rospy.logerr(f"Error while drawing matches: {e}")
+
+        # Estimate pose if enough matches are found
+        if len(good_matches) > 8:
+            src_pts = np.float32([self.ref_keypoints2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+            dst_pts = np.float32([kp[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+
+            # Compute homography
+            H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            if H is not None:
+                # Find the center of the matched reference image in the current frame
+                h, w = self.reference_image2.shape
+                ref_center = np.array([[w / 2, h / 2]], dtype=np.float32).reshape(-1, 1, 2)
+                ref_center_transformed = cv2.perspectiveTransform(ref_center, H)
+
+                # Current frame center
+                frame_center_x = gray.shape[1] / 2
+                frame_center_y = gray.shape[0] / 2
+
+                # Define the target position slightly left of the center
+                target_x = frame_center_x
+                target_y = frame_center_y
+
+                # Difference between transformed reference center and the target position
+                diff_x = ref_center_transformed[0, 0, 0] - target_x
+                diff_y = ref_center_transformed[0, 0, 1] - target_y
+
+                # Update velocities to move the reference image to the top-left
+                self.update_velocity(0 * diff_y, -0.001 * diff_x, 0, 0)
+                rospy.loginfo(f"Top-left localization velocities published: X: {0 * diff_y}, Y: {-0.001 * diff_x}")
             else:
-                centered = True
-                rospy.loginfo("Localized on sign 2")
-
-            rospy.loginfo("Trying to localize on sign 2")
-
-            cv2.imshow("Blue", blue)
-            cv2.waitKey(1)  
-
+                rospy.logwarn("Homography matrix could not be computed.")
+        else:
+            self.update_velocity(0,0,0,0)
 
 
 

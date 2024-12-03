@@ -102,7 +102,7 @@ class SignReader:
                 rectified_img_msg = self.bridge.cv2_to_imgmsg(rectified_sign, encoding="mono8")
                 det_H = np.linalg.det(H)
 
-                if np.abs(det_H) < 200 and np.abs(det_H) >= 0.8:
+                if np.abs(det_H) < 100 and np.abs(det_H) >= 0.8:
                     self.pub.publish(rectified_img_msg)
 
                 # uncomment to display transformed sign for debugging purspose 
