@@ -170,25 +170,25 @@ class Driving:
 
     def go_sign6(self):
         self.move_for_duration(0,-1.45,0,0,3.65)
-        self.move_for_duration(0,-0.51,0,0,0.6)
+        self.move_for_duration(0,-0.51,0,0,0.62)
 
     def go_sign6r(self):
         self.move_for_duration(0,1.45,0,0,3.65)
-        self.move_for_duration(0,0.51,0,0,0.6)
+        self.move_for_duration(0,0.51,0,0,0.62)
 
 
     def go_sign7(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(0,-0.5,0,0,3.0)
-        self.move_for_duration(1.8,0,0,0,3)
+        self.move_for_duration(0,-0.5,0,0,2.9)
+        self.move_for_duration(1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_sign7r(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(-1.8,0,0,0,3)
+        self.move_for_duration(-1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,0.5,0,0,3.0)
+        self.move_for_duration(0,0.5,0,0,2.9)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_tunnel(self):
