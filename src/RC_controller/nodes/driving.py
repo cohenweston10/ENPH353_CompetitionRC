@@ -163,10 +163,25 @@ class Driving:
         self.move_for_duration(0,0,-0.5,0,0.4)
 
     def go_sign6(self):
-        self.move_for_duration(0,-1.8,0,0,3.2)
+        self.move_for_duration(0,-1.8,0,0,3.22)
 
     def go_sign6r(self):
-        self.move_for_duration(0,1.8,0,0,3.2)
+        self.move_for_duration(0,1.8,0,0,3.22)
+
+    def go_sign7(self):
+        self.move_for_duration(0,0,0.5,0,1)
+        self.move_for_duration(0,-0.5,0,0,3.0)
+        self.move_for_duration(1.8,0,0,0,3)
+        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(0,0,-0.5,0,1)
+
+    def go_sign7r(self):
+        self.move_for_duration(0,0,0.5,0,1)
+        self.move_for_duration(-1.8,0,0,0,3)
+        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(0,0.5,0,0,3.0)
+        self.move_for_duration(0,0,-0.5,0,1)
+
 
 
     def operate(self):
@@ -318,6 +333,10 @@ class Driving:
                     self.go_sign6()
                 elif command == 'go_sign6r':
                     self.go_sign6r()
+                elif command == 'go_sign7':
+                    self.go_sign7()
+                elif command == 'go_sign7r':
+                    self.go_sign7r()    
                 elif command == 'exit':
                     rospy.loginfo("Exiting command listener.")
                     break
