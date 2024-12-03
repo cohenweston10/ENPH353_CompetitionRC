@@ -26,6 +26,7 @@ class Driving:
         rospy.init_node('driving', anonymous=True)
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
+        self.ready_pub = rospy.Publisher('/ready', String, queue_size=10)
 
         # Subscribe t        self.leaving_prev_clue = Trueo the State output
         rospy.Subscriber('/state', String, self.state_callback)
@@ -36,17 +37,11 @@ class Driving:
         # Subscribe to the OCR output
         # rospy.Subscriber('/ocr/processed_strings', String, self.OCRcallback)
 
-        # Subscribe to the camera topics
-        rospy.Subscriber('/quad/front_cam/camera/image', Image, self.front_image_callback)
-        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.right_image_callback)
-        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.left_image_callback)
-        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.back_image_callback)
-
-
+ 
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
 
-        self.localize_duration = 6
+        self.localize_duration = 8
 
         self.state = ""
         self.clue_count = 0
@@ -58,6 +53,13 @@ class Driving:
         self.right_cam_image = None
         self.left_cam_image = None
         self.back_cam_image = None
+
+
+        # Subscribe to the camera topics
+        rospy.Subscriber('/quad/front_cam/camera/image', Image, self.front_image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.right_image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.left_image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.back_image_callback)
 
         # keypoints and descriptors for ref image
         self.sift = cv2.SIFT_create()
@@ -73,6 +75,7 @@ class Driving:
     def clue_count_callback(self, count):
         self.clue_count = count.data
         self.movement_complete = False
+        self.ready_pub.publish("NOTREADY")
         rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
 
     def OCRcallback(self, data):
@@ -272,7 +275,6 @@ class Driving:
     def operate(self):
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
-            rospy.loginfo(f"Current clue count is {self.clue_count}")
             if self.state == "STARTUP":
                 self.startup()
                 rospy.loginfo("Starting up...")
@@ -280,8 +282,8 @@ class Driving:
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
-                        rospy.sleep(0.01) # do nothing
+                    if self.movement_complete: # Post operation
+                        self.ready_pub.publish("READY") # do nothing
                     else: # Regular operation
                         self.go_sign1()
                         self.movement_complete = True
@@ -291,6 +293,8 @@ class Driving:
                 elif self.clue_count == 1:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.front_cam_image, "FRONT")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign2()
                         self.movement_complete = True
@@ -299,7 +303,9 @@ class Driving:
 
                 elif self.clue_count == 2:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
-                        self.localize(self.right_cam_image, "RIGHT")
+                        rospy.loginfo(f"time difference is {(rospy.Time.now() - self.start_time).to_sec()}")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign3()
                         self.movement_complete = True
@@ -309,6 +315,8 @@ class Driving:
                 elif self.clue_count == 3:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.back_cam_image, "BACK")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign4()
                         self.movement_complete = True
@@ -318,6 +326,8 @@ class Driving:
                 elif self.clue_count == 4:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.front_cam_image, "FRONT")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign5()
                         self.movement_complete = True
@@ -327,6 +337,8 @@ class Driving:
                 elif self.clue_count == 5:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.right_cam_image, "RIGHT")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign6()
                         self.movement_complete = True
@@ -336,6 +348,8 @@ class Driving:
                 elif self.clue_count == 6:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.left_cam_image, "LEFT")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign7()
                         self.movement_complete = True
@@ -345,6 +359,8 @@ class Driving:
                 elif self.clue_count == 7:
                     if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         self.localize(self.left_cam_image, "LEFT")
+                    elif self.movement_complete:
+                        self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_tunnel()
                         self.go_sign8()
