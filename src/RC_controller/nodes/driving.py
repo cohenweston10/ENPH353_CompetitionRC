@@ -203,43 +203,46 @@ class Driving:
 
 
     def go_sign4(self):
-        self.move_for_duration(-0.6,0,0,0,2.49)
+        self.move_for_duration(-0.6,0,0,0,2.54)
         self.move_for_duration(0,-1.8,0,0,2.86)
 
     def go_sign4r(self):
         self.move_for_duration(0,1.8,0,0,2.86)
-        self.move_for_duration(0.6,0,0,0,2.49)
+        self.move_for_duration(0.6,0,0,0,2.54)
 
     def go_sign5(self):
         self.move_for_duration(0,0,0.5,0,0.4)
-        self.move_for_duration(-1.5,0,0,0,2.71)
-        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(-1.45,0,0,0,2.71)
+        self.move_for_duration(0,0,0,0,0.7)
         self.move_for_duration(0,0,-0.5,0,0.4)
 
     def go_sign5r(self):
         self.move_for_duration(0,0,0.5,0,0.4)
-        self.move_for_duration(1.5,0,0,0,2.71)
-        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(1.45,0,0,0,2.71)
+        self.move_for_duration(0,0,0,0,0.7)
         self.move_for_duration(0,0,-0.5,0,0.4)
 
     def go_sign6(self):
-        self.move_for_duration(0,-1.8,0,0,3.22)
+        self.move_for_duration(0,-1.45,0,0,3.65)
+        self.move_for_duration(0,-0.51,0,0,0.62)
 
     def go_sign6r(self):
-        self.move_for_duration(0,1.8,0,0,3.22)
+        self.move_for_duration(0,1.45,0,0,3.65)
+        self.move_for_duration(0,0.51,0,0,0.62)
+
 
     def go_sign7(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(0,-0.5,0,0,3.0)
-        self.move_for_duration(1.8,0,0,0,3)
+        self.move_for_duration(0,-0.5,0,0,2.9)
+        self.move_for_duration(1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_sign7r(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(-1.8,0,0,0,3)
+        self.move_for_duration(-1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,0.5,0,0,3.0)
+        self.move_for_duration(0,0.5,0,0,2.9)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_tunnel(self):
@@ -251,10 +254,12 @@ class Driving:
     def go_sign8(self):
         self.move_for_duration(-1.2,0,2.05,0,1.4)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,1.8,0,0,2.15)
+        self.move_for_duration(0,1.5,0,0,2.4)
+        self.move_for_duration(0,0.015,0,0,0.5)
 
     def go_sign8r(self):
-        self.move_for_duration(0,-1.8,0,0,2.15)
+        self.move_for_duration(0,-0.015,0,0,0.5)
+        self.move_for_duration(0,-1.5,0,0,2.4)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(1.2,0,-2.05,0,1.4)
 
