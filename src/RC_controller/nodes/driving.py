@@ -34,7 +34,7 @@ class Driving:
         rospy.Subscriber('/clue_count', Int8, self.clue_count_callback)
 
         # Subscribe to the OCR output
-        rospy.Subscriber('/ocr/processed_strings', String, self.OCRcallback)
+        # rospy.Subscriber('/ocr/processed_strings', String, self.OCRcallback)
 
 
         self.bridge = CvBridge()
@@ -119,7 +119,7 @@ class Driving:
 
 
     def startup(self):
-        self.move_for_duration(0,0,0.20,0,2)
+        self.move_for_duration(0,0,0.20,0,1.5)
 
 
     def go_sign1(self):
