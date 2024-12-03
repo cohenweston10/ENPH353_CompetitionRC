@@ -119,7 +119,7 @@ class Driving:
 
 
     def startup(self):
-        self.move_for_duration(0,0,0.2,0,2)
+        self.move_for_duration(0,0,0.22,0,2)
 
 
     def go_sign1(self):
