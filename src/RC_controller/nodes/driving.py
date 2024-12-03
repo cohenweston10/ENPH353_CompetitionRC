@@ -121,16 +121,22 @@ class Driving:
     def startup(self):
         self.move_for_duration(0,0,0.20,0,1.5)
 
+    def startupr(self):
+        self.move_for_duration(0,0,-0.20,0,1.5)
+
 
     def go_sign1(self):
-        self.move_for_duration(0.4,0.25,0,0,2)
+        self.move_for_duration(0.42,0.25,0,0,2)
+
+    def go_sign1r(self):
+        self.move_for_duration(-0.42,-0.25,0,0,2)
 
     def go_sign2(self):
         self.move_for_duration(0,-0.47,0,0,2)
-        self.move_for_duration(1.8,0,0,0,2.66)
+        self.move_for_duration(1.3,0,0,0,3.3)
 
     def go_sign2r(self):
-            self.move_for_duration(-1.8,0,0,0,2.66)
+            self.move_for_duration(-1.3,0,0,0,3.3)
             self.move_for_duration(0,0.45,0,0,2)
 
     def go_sign3(self):
@@ -329,6 +335,10 @@ class Driving:
                     self.startup()
                 elif command == 'go_sign1':
                     self.go_sign1()
+                elif command == 'go_startupr':
+                    self.startupr()
+                elif command == 'go_sign1r':
+                    self.go_sign1r()
                 elif command == 'go_sign2':
                     self.go_sign2()
                 elif command == 'go_sign2r':
