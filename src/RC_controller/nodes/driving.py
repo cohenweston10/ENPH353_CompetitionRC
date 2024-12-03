@@ -285,14 +285,14 @@ class Driving:
 
     def go_sign8(self):
         self.move_for_duration(-1.2,0,2.05,0,1.4)
-        self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,1.5,0,0,2.4)
+        self.move_for_duration(0,0,0,0,0.45)
+        self.move_for_duration(0,1.5,0,0,2.5)
         self.move_for_duration(0,0.025,0,0,0.4)
         self.gts8 = True
 
     def go_sign8r(self):
         self.move_for_duration(0,-0.025,0,0,0.4)
-        self.move_for_duration(0,-1.5,0,0,2.4)
+        self.move_for_duration(0,-1.5,0,0,2.45)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(1.2,0,-2.05,0,1.4)
 

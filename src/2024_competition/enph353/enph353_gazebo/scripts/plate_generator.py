@@ -39,7 +39,8 @@ def loadCrimesProfileCompetition():
 
     raw = response.text.split('\n')
     key_list   = raw[0].split(',')
-    value_list = specific_row
+    #value_list = specific_row
+    value_list = raw[1].split(',')
 
     clues = {}
 
