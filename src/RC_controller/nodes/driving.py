@@ -46,7 +46,7 @@ class Driving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
 
-        self.localize_duration = 3
+        self.localize_duration = 6
 
         self.state = ""
         self.clue_count = 0
@@ -272,6 +272,7 @@ class Driving:
     def operate(self):
         """Main loop to check state and drive accordingly."""
         while not rospy.is_shutdown():
+            rospy.loginfo(f"Current clue count is {self.clue_count}")
             if self.state == "STARTUP":
                 self.startup()
                 rospy.loginfo("Starting up...")
@@ -435,18 +436,18 @@ class Driving:
                 if direction == "FRONT":
                     diff_x = ref_center_transformed[0, 0, 0] - target_x
                     rospy.loginfo(f"Center is at {ref_center_transformed[0, 0, 0]}, target is {target_x}, difference is {diff_x}")
-                    self.update_velocity(0, -0.0001 * diff_x, 0, 0)
+                    self.update_velocity(0, -0.0005 * diff_x, 0, 0)
                 elif direction == "BACK":
                     diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
-                    self.update_velocity(0, -0.0001 * diff_x, 0, 0)
+                    self.update_velocity(0, -0.0005 * diff_x, 0, 0)
                 elif direction == "RIGHT":
                     diff_x = ref_center_transformed[0, 0, 0] - target_x
-                    self.update_velocity(-0.0001 * diff_x, 0, 0, 0)
+                    self.update_velocity(-0.0005 * diff_x, 0, 0, 0)
                 elif direction == "LEFT":
                     diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
-                    self.update_velocity(-0.0001 * diff_x, 0, 0, 0)
+                    self.update_velocity(-0.0005 * diff_x, 0, 0, 0)
 
-                rospy.loginfo(f"Localization velocitiy published: {-0.0001 * diff_x}")
+                rospy.loginfo(f"Localization velocitiy published: {-0.0005 * diff_x}")
             else:
                 # rospy.logwarn("Homography matrix could not be computed.")
                 x = 2
