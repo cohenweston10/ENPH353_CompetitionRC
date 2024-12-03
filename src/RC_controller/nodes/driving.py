@@ -211,13 +211,13 @@ class Driving:
         self.move_for_duration(-0.42,-0.25,0,0,2)
 
     def go_sign2(self):
-        self.move_for_duration(0,-0.47,0,0,2)
+        self.move_for_duration(0,-0.47,0,0,2.05)
         self.move_for_duration(1.3,0,0,0,3.3)
         self.gts2 = True
 
     def go_sign2r(self):
             self.move_for_duration(-1.3,0,0,0,3.3)
-            self.move_for_duration(0,0.45,0,0,2)
+            self.move_for_duration(0,0.45,0,0,2.05)
 
     def go_sign3(self):
         self.move_for_duration(0,-0.5,0,0,2.85)
@@ -230,13 +230,13 @@ class Driving:
 
 
     def go_sign4(self):
-        self.move_for_duration(-0.6,0,0,0,2.50)
+        self.move_for_duration(-0.6,0,0,0,2.49)
         self.move_for_duration(0,-1.8,0,0,2.86)
         self.gts4 = True
 
     def go_sign4r(self):
         self.move_for_duration(0,1.8,0,0,2.86)
-        self.move_for_duration(0.6,0,0,0,2.50)
+        self.move_for_duration(0.6,0,0,0,2.49)
 
     def go_sign5(self):
         self.move_for_duration(0,0,0.5,0,0.4)
@@ -253,12 +253,12 @@ class Driving:
 
     def go_sign6(self):
         self.move_for_duration(0,-1.45,0,0,3.65)
-        self.move_for_duration(0,-0.51,0,0,0.64)
+        self.move_for_duration(0,-0.51,0,0,0.652)
         self.gts6 = True
 
     def go_sign6r(self):
         self.move_for_duration(0,1.45,0,0,3.65)
-        self.move_for_duration(0,0.51,0,0,0.64)
+        self.move_for_duration(0,0.51,0,0,0.652)
 
 
     def go_sign7(self):
@@ -382,7 +382,7 @@ class Driving:
 
 
                 elif current_clue_count == 5:
-                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < 2: # Post operation
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.right_cam_image, "RIGHT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
