@@ -10,6 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 import time
 import sys
+import threading 
 
 
 THRESHOLD = 50 #value is based off of lab 2
@@ -27,6 +28,8 @@ class Driving:
 
         self.vel_pub = rospy.Publisher(TOPIC_CONTROL, Twist, queue_size=1)
         self.ready_pub = rospy.Publisher('/ready', String, queue_size=10)
+
+        self.lock = threading.Lock()
 
         # Subscribe t        self.leaving_prev_clue = Trueo the State output
         rospy.Subscriber('/state', String, self.state_callback)
@@ -70,13 +73,16 @@ class Driving:
         self.start_time = rospy.Time.now()
         
     def state_callback(self, state):
-        self.state = state.data
+        with self.lock:
+            self.state = state.data
 
     def clue_count_callback(self, count):
-        self.clue_count = count.data
-        self.movement_complete = False
-        self.ready_pub.publish("NOTREADY")
-        rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
+        with self.lock:
+            self.clue_count = count.data
+            self.movement_complete = False
+            self.read_pub.publish("NOTREADY")
+            rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
+
 
     def OCRcallback(self, data):
         if time.time() - self.last_clue > 15:
@@ -278,99 +284,116 @@ class Driving:
             if self.state == "STARTUP":
                 self.startup()
                 rospy.loginfo("Starting up...")
-
+                with self.lock:
+                    rospy.loginfo(f"Current clue count is {self.clue_count}")
+                    current_state = self.state
+                    current_clue_count = self.clue_count
+                    current_movement_complete = self.movement_complete
+                    current_start_time = self.start_time
+                    current_localize_duration = self.localize_duration
+                    current_front_cam_image = self.front_cam_image
+                    current_right_cam_image = self.right_cam_image
+                    current_left_cam_image = self.left_cam_image
+                    current_back_cam_image = self.back_cam_image
 
             elif self.state == "DRIVING":
-                if self.clue_count == 0:
+                if current_clue_count == 0:
                     if self.movement_complete: # Post operation
                         self.ready_pub.publish("READY") # do nothing
                     else: # Regular operation
                         self.go_sign1()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        current_movement_complete = True
+                        current_start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 1:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 1:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.front_cam_image, "FRONT")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign2()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock:
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 2:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
-                        rospy.loginfo(f"time difference is {(rospy.Time.now() - self.start_time).to_sec()}")
-                    elif self.movement_complete:
+                elif current_clue_count == 2:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
+                        rospy.loginfo(f"time difference is {(rospy.Time.now() - current_start_time).to_sec()}")
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign3()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock()
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 3:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 3:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.back_cam_image, "BACK")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign4()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock:
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 4:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 4:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.front_cam_image, "FRONT")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign5()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock()
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 5:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 5:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.right_cam_image, "RIGHT")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign6()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock()
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 6:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 6:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.left_cam_image, "LEFT")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_sign7()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock:
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
-                elif self.clue_count == 7:
-                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                elif current_clue_count == 7:
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
                         self.localize(self.left_cam_image, "LEFT")
-                    elif self.movement_complete:
+                    elif current_movement_complete:
                         self.ready_pub.publish("READY")
                     else: # Regular operation
                         self.go_tunnel()
                         self.go_sign8()
-                        self.movement_complete = True
-                        self.start_time = rospy.Time.now()
+                        with self.lock:
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
-
-            elif self.state == "STOP":
+            elif current_state == "STOP":
                 self.update_velocity(0, 0, 0, 0)
-                self.leaving_prev_clue = True
+                with self.lock:
+                    self.leaving_prev_clue = True
 
             rospy.sleep(0.1)  # Sleep for a short time to avoid high CPU usage
 
