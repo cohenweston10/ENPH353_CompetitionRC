@@ -158,14 +158,14 @@ class Driving:
 
     def go_sign5(self):
         self.move_for_duration(0,0,0.5,0,0.4)
-        self.move_for_duration(-1.5,0,0,0,2.71)
-        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(-1.45,0,0,0,2.71)
+        self.move_for_duration(0,0,0,0,0.7)
         self.move_for_duration(0,0,-0.5,0,0.4)
 
     def go_sign5r(self):
         self.move_for_duration(0,0,0.5,0,0.4)
-        self.move_for_duration(1.5,0,0,0,2.71)
-        self.move_for_duration(0,0,0,0,0.5)
+        self.move_for_duration(1.45,0,0,0,2.71)
+        self.move_for_duration(0,0,0,0,0.7)
         self.move_for_duration(0,0,-0.5,0,0.4)
 
     def go_sign6(self):
