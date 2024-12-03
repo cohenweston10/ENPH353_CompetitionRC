@@ -134,12 +134,12 @@ class Driving:
             self.move_for_duration(0,0.45,0,0,2)
 
     def go_sign3(self):
-        self.move_for_duration(0,-0.5,0,0,2)
-        self.move_for_duration(0.5,0,0,0,1)
+        self.move_for_duration(0,-1,0,0,1.76)
+        self.move_for_duration(1,0,0,0,1)
 
     def go_sign3r(self):
-        self.move_for_duration(-0.5,0,0,0,1)
-        self.move_for_duration(0,0.5,0,0,2)
+        self.move_for_duration(-1,0,0,0,1)
+        self.move_for_duration(0,1,0,0,1.76)
 
 
     def operate(self):
@@ -278,7 +278,7 @@ class Driving:
                 elif command == 'go_sign3':
                     self.go_sign3()
                 elif command == 'go_sign3r':
-                    self.go_sign2r()
+                    self.go_sign3r()
                 elif command == 'exit':
                     rospy.loginfo("Exiting command listener.")
                     break

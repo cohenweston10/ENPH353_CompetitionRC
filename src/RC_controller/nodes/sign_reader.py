@@ -21,6 +21,10 @@ class SignReader:
 
         # Subscribe to the camera topic
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.image_callback)
+
 
         # Initialize a frame counter
         self.frame_counter = 0
@@ -75,8 +79,10 @@ class SignReader:
                 # Warp the region in the camera image to match the reference image perspective
                 rectified_sign = cv2.warpPerspective(gray, matrix, (ref_w, ref_h))
 
+                #rospy.loginfo("Sign detected")
                 return rectified_sign, matrix  # Output rectified image
 
+        #rospy.loginfo("No sign detected")
         return None, None  # If no rectified image can be computed
 
     def image_callback(self, data):
@@ -111,4 +117,5 @@ class SignReader:
 if __name__ == '__main__':
     # Create an instance of the SignReader class and start it
     sign_reader = SignReader()
+    rospy.loginfo("Signer reader node initialized")
     sign_reader.start()
