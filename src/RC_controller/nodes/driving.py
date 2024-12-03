@@ -44,7 +44,7 @@ class Driving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
 
-        self.localize_duration = 8
+        self.localize_duration = 4
 
         self.state = ""
         self.clue_count = 0
@@ -263,7 +263,7 @@ class Driving:
 
     def go_sign7(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(0,-0.5,0,0,2.85)
+        self.move_for_duration(0,-0.5,0,0,2.75)
         self.move_for_duration(1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,0,-0.5,0,1)
@@ -273,7 +273,7 @@ class Driving:
         self.move_for_duration(0,0,0.5,0,1)
         self.move_for_duration(-1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,0.5,0,0,2.85)
+        self.move_for_duration(0,0.5,0,0,2.75)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_tunnel(self):
@@ -287,11 +287,11 @@ class Driving:
         self.move_for_duration(-1.2,0,2.05,0,1.4)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,1.5,0,0,2.4)
-        self.move_for_duration(0,0.015,0,0,0.5)
+        self.move_for_duration(0,0.025,0,0,0.4)
         self.gts8 = True
 
     def go_sign8r(self):
-        self.move_for_duration(0,-0.015,0,0,0.5)
+        self.move_for_duration(0,-0.025,0,0,0.4)
         self.move_for_duration(0,-1.5,0,0,2.4)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(1.2,0,-2.05,0,1.4)
@@ -370,7 +370,7 @@ class Driving:
 
 
                 elif current_clue_count == 4:
-                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < 2: # Post operation
                         self.localize(self.front_cam_image, "FRONT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
@@ -382,7 +382,7 @@ class Driving:
 
 
                 elif current_clue_count == 5:
-                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < 2: # Post operation
                         self.localize(self.right_cam_image, "RIGHT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
