@@ -182,6 +182,12 @@ class Driving:
         self.move_for_duration(0,0.5,0,0,3.0)
         self.move_for_duration(0,0,-0.5,0,1)
 
+    def go_tunnel(self):
+        self.move_for_duration(0,0.5,0.25,0,2.5)
+
+    def go_tunnelr(self):
+        self.move_for_duration(0,-0.5,-0.25,0,2.5)
+
 
 
     def operate(self):
@@ -337,6 +343,10 @@ class Driving:
                     self.go_sign7()
                 elif command == 'go_sign7r':
                     self.go_sign7r()    
+                elif command == 'go_tunnel':
+                    self.go_tunnel()
+                elif command == 'go_tunnelr':
+                    self.go_tunnelr()   
                 elif command == 'exit':
                     rospy.loginfo("Exiting command listener.")
                     break
