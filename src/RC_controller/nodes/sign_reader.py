@@ -21,9 +21,22 @@ class SignReader:
 
         # Subscribe to the camera topic
         rospy.Subscriber('/quad/front_cam/camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/right_cam/right_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/left_cam/left_camera/image', Image, self.image_callback)
+        rospy.Subscriber('/quad/back_cam/back_camera/image', Image, self.image_callback)
+
 
         # Initialize a frame counter
         self.frame_counter = 0
+
+    def process_reference_image(self):
+        # Load reference image and process it
+        ref_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png")
+        ref_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
+        kp_ref, desc_ref = self.sift.detectAndCompute(ref_gray, None)
+        ref_h, ref_w = ref_gray.shape[:2]
+        rospy.loginfo("REFERENCE IMAGE LOADED")
+        return kp_ref, desc_ref, ref_h, ref_w
 
     def read_sign(self, cv_image):
         # Convert image to grayscale
@@ -66,8 +79,10 @@ class SignReader:
                 # Warp the region in the camera image to match the reference image perspective
                 rectified_sign = cv2.warpPerspective(gray, matrix, (ref_w, ref_h))
 
+                #rospy.loginfo("Sign detected")
                 return rectified_sign, matrix  # Output rectified image
 
+        #rospy.loginfo("No sign detected")
         return None, None  # If no rectified image can be computed
 
     def image_callback(self, data):
@@ -78,8 +93,8 @@ class SignReader:
         # Increment the frame counter
         self.frame_counter += 1
 
-        # Process only every 10th frame
-        if self.frame_counter % 10 == 0:
+        # Process only every 2th frame
+        if self.frame_counter % 2 == 0:
             # Call the read_sign method to process the image
             rectified_sign, H = self.read_sign(cv_image)
             if rectified_sign is not None:
@@ -102,4 +117,5 @@ class SignReader:
 if __name__ == '__main__':
     # Create an instance of the SignReader class and start it
     sign_reader = SignReader()
+    rospy.loginfo("Signer reader node initialized")
     sign_reader.start()

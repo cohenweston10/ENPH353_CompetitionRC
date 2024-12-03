@@ -72,12 +72,15 @@ imu_sub = rospy.Subscriber("/quad/raw_imu", Imu, imu_callback)
 # Publishers
 vel_pub = rospy.Publisher('/quad/cmd_vel', Twist, queue_size=1)
 
+linMult = 0.4
+angMult = 1.0
+
 # Send velocity based on key states
 def update_velocity():
-    vx = (key_states["i"] - key_states["k"]) * 0.5  # Forward/Backward
-    vy = (key_states["j"] - key_states["l"]) * 0.5  # Left/Right (corrected)
-    vz = (key_states["w"] - key_states["s"]) * 0.5  # Up/Down
-    vaz = (key_states["a"] - key_states["d"]) * 1.0  # Rotate left/right
+    vx = (key_states["i"] - key_states["k"]) * linMult # Forward/Backward
+    vy = (key_states["j"] - key_states["l"]) * linMult # Left/Right (corrected)
+    vz = (key_states["w"] - key_states["s"]) * linMult # Up/Down
+    vaz = (key_states["a"] - key_states["d"]) * angMult  # Rotate left/right
 
     vel_msg = Twist()
     vel_msg.linear.x = vx
