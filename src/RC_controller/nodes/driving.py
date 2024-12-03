@@ -46,7 +46,7 @@ class Driving:
         self.bridge = CvBridge()
         self.rate = rospy.Rate(30)
 
-        self.localize_duration = 2
+        self.localize_duration = 3
 
         self.state = ""
         self.clue_count = 0
@@ -63,6 +63,9 @@ class Driving:
         self.sift = cv2.SIFT_create()
         self.reference_image = cv2.imread("/home/fizzer/ros_ws/src/RC_controller/nodes/clue_banner_ref.png", cv2.IMREAD_GRAYSCALE)
         self.ref_keypoints, self.ref_descriptors = self.sift.detectAndCompute(self.reference_image, None)
+
+        # timing variables
+        self.start_time = rospy.Time.now()
         
     def state_callback(self, state):
         self.state = state.data
@@ -172,15 +175,6 @@ class Driving:
         self.update_velocity(0, 0, 0, 0)
         rospy.loginfo(f"Movement completed with smooth acceleration and deceleration for {duration} seconds.")
 
-    def localize_for(self, cam, direction, duration):
-        start_time = rospy.Time.now()
-        elapsed_time = 0
-
-        while elapsed_time < duration and not rospy.is_shutdown():
-            elapsed_time = (rospy.Time.now() - start_time).to_sec()
-            self.localize(cam, direction) 
-
-        self.update_velocity(0,0,0,0)
 
     def startup(self):
         self.move_for_duration(0,0,0.20,0,1.5)
@@ -285,67 +279,76 @@ class Driving:
 
             elif self.state == "DRIVING":
                 if self.clue_count == 0:
-                    if self.movement_complete: # Post operation
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
                         rospy.sleep(0.01) # do nothing
                     else: # Regular operation
                         self.go_sign1()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 1:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.front_cam_image, "FRONT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.front_cam_image, "FRONT")
                     else: # Regular operation
                         self.go_sign2()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 2:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.right_cam_image, "RIGHT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.right_cam_image, "RIGHT")
                     else: # Regular operation
                         self.go_sign3()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 3:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.back_cam_image, "BACK", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.back_cam_image, "BACK")
                     else: # Regular operation
                         self.go_sign4()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 4:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.front_cam_image, "FRONT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.front_cam_image, "FRONT")
                     else: # Regular operation
                         self.go_sign5()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 5:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.right_cam_image, "RIGHT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.right_cam_image, "RIGHT")
                     else: # Regular operation
                         self.go_sign6()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 6:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.left_cam_image, "LEFT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.left_cam_image, "LEFT")
                     else: # Regular operation
                         self.go_sign7()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
                 elif self.clue_count == 7:
-                    if self.movement_complete: # Post operation
-                        self.localize_for(self.left_cam_image, "LEFT", self.localize_duration)
+                    if self.movement_complete and (rospy.Time.now() - self.start_time).to_sec() < self.localize_duration: # Post operation
+                        self.localize(self.left_cam_image, "LEFT")
                     else: # Regular operation
+                        self.go_tunnel()
                         self.go_sign8()
                         self.movement_complete = True
+                        self.start_time = rospy.Time.now()
 
 
             elif self.state == "STOP":
@@ -408,7 +411,7 @@ class Driving:
             rospy.logerr(f"Error while drawing matches: {e}")
 
         # Estimate pose if enough matches are found
-        if len(good_matches) > 8:
+        if len(good_matches) > 3:
             src_pts = np.float32([self.ref_keypoints[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
             dst_pts = np.float32([kp[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
 
@@ -431,18 +434,19 @@ class Driving:
                 # Difference between transformed reference center and the target position
                 if direction == "FRONT":
                     diff_x = ref_center_transformed[0, 0, 0] - target_x
-                    self.update_velocity(0, -0.001 * diff_x, 0, 0)
+                    rospy.loginfo(f"Center is at {ref_center_transformed[0, 0, 0]}, target is {target_x}, difference is {diff_x}")
+                    self.update_velocity(0, -0.0001 * diff_x, 0, 0)
                 elif direction == "BACK":
                     diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
-                    self.update_velocity(0, -0.001 * diff_x, 0, 0)
+                    self.update_velocity(0, -0.0001 * diff_x, 0, 0)
                 elif direction == "RIGHT":
                     diff_x = ref_center_transformed[0, 0, 0] - target_x
-                    self.update_velocity(-0.001 * diff_x, 0, 0, 0)
+                    self.update_velocity(-0.0001 * diff_x, 0, 0, 0)
                 elif direction == "LEFT":
                     diff_x = -1 * (ref_center_transformed[0, 0, 0] - target_x)
-                    self.update_velocity(-0.001 * diff_x, 0, 0, 0)
+                    self.update_velocity(-0.0001 * diff_x, 0, 0, 0)
 
-                rospy.loginfo(f"Localization velocitiy published: {-0.001 * diff_x}")
+                rospy.loginfo(f"Localization velocitiy published: {-0.0001 * diff_x}")
             else:
                 # rospy.logwarn("Homography matrix could not be computed.")
                 x = 2
