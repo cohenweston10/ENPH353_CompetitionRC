@@ -71,6 +71,17 @@ class Driving:
 
         # timing variables
         self.start_time = rospy.Time.now()
+
+        #Driving flags
+        self.gts1 = False
+        self.gts2 = False
+        self.gts3 = False
+        self.gts4 = False
+        self.gts5 = False
+        self.gts6 = False
+        self.gts7 = False
+        self.gtt = False
+        self.gts8 = False
         
     def state_callback(self, state):
         with self.lock:
@@ -80,7 +91,7 @@ class Driving:
         with self.lock:
             self.clue_count = count.data
             self.movement_complete = False
-            self.read_pub.publish("NOTREADY")
+            self.ready_pub.publish("NOTREADY")
             rospy.loginfo("CLUE COUNTER INCREMENTED\n\n\n")
 
 
@@ -194,6 +205,7 @@ class Driving:
 
     def go_sign1(self):
         self.move_for_duration(0.42,0.25,0,0,2)
+        self.gts1 = True
 
     def go_sign1r(self):
         self.move_for_duration(-0.42,-0.25,0,0,2)
@@ -201,6 +213,7 @@ class Driving:
     def go_sign2(self):
         self.move_for_duration(0,-0.47,0,0,2)
         self.move_for_duration(1.3,0,0,0,3.3)
+        self.gts2 = True
 
     def go_sign2r(self):
             self.move_for_duration(-1.3,0,0,0,3.3)
@@ -209,6 +222,7 @@ class Driving:
     def go_sign3(self):
         self.move_for_duration(0,-0.5,0,0,2.85)
         self.move_for_duration(0.5,0,0,0,1.95)
+        self.gts3 = True
 
     def go_sign3r(self):
         self.move_for_duration(-0.5,0,0,0,1.95)
@@ -216,18 +230,20 @@ class Driving:
 
 
     def go_sign4(self):
-        self.move_for_duration(-0.6,0,0,0,2.54)
+        self.move_for_duration(-0.6,0,0,0,2.50)
         self.move_for_duration(0,-1.8,0,0,2.86)
+        self.gts4 = True
 
     def go_sign4r(self):
         self.move_for_duration(0,1.8,0,0,2.86)
-        self.move_for_duration(0.6,0,0,0,2.54)
+        self.move_for_duration(0.6,0,0,0,2.50)
 
     def go_sign5(self):
         self.move_for_duration(0,0,0.5,0,0.4)
         self.move_for_duration(-1.45,0,0,0,2.71)
         self.move_for_duration(0,0,0,0,0.7)
         self.move_for_duration(0,0,-0.5,0,0.4)
+        self.gts5 = True
 
     def go_sign5r(self):
         self.move_for_duration(0,0,0.5,0,0.4)
@@ -237,29 +253,32 @@ class Driving:
 
     def go_sign6(self):
         self.move_for_duration(0,-1.45,0,0,3.65)
-        self.move_for_duration(0,-0.51,0,0,0.62)
+        self.move_for_duration(0,-0.51,0,0,0.61)
+        self.gts6 = True
 
     def go_sign6r(self):
         self.move_for_duration(0,1.45,0,0,3.65)
-        self.move_for_duration(0,0.51,0,0,0.62)
+        self.move_for_duration(0,0.51,0,0,0.61)
 
 
     def go_sign7(self):
         self.move_for_duration(0,0,0.5,0,1)
-        self.move_for_duration(0,-0.5,0,0,2.9)
+        self.move_for_duration(0,-0.5,0,0,2.85)
         self.move_for_duration(1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,0,-0.5,0,1)
+        self.gts7 = True
 
     def go_sign7r(self):
         self.move_for_duration(0,0,0.5,0,1)
         self.move_for_duration(-1.8,0,0,0,3.05)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(0,0.5,0,0,2.9)
+        self.move_for_duration(0,0.5,0,0,2.85)
         self.move_for_duration(0,0,-0.5,0,1)
 
     def go_tunnel(self):
         self.move_for_duration(0,0.5,0.25,0,2.5)
+        self.gtt = True
 
     def go_tunnelr(self):
         self.move_for_duration(0,-0.5,-0.25,0,2.5)
@@ -269,6 +288,7 @@ class Driving:
         self.move_for_duration(0,0,0,0,0.5)
         self.move_for_duration(0,1.5,0,0,2.4)
         self.move_for_duration(0,0.015,0,0,0.5)
+        self.gts8 = True
 
     def go_sign8r(self):
         self.move_for_duration(0,-0.015,0,0,0.5)
@@ -280,30 +300,35 @@ class Driving:
 
     def operate(self):
         """Main loop to check state and drive accordingly."""
+
         while not rospy.is_shutdown():
+
+            with self.lock:
+                # rospy.loginfo(f"Current clue count is {self.clue_count}")
+                current_state = self.state
+                current_clue_count = self.clue_count
+                current_movement_complete = self.movement_complete
+                current_start_time = self.start_time
+                current_localize_duration = self.localize_duration
+                current_front_cam_image = self.front_cam_image
+                current_right_cam_image = self.right_cam_image
+                current_left_cam_image = self.left_cam_image
+                current_back_cam_image = self.back_cam_image
+
+
             if self.state == "STARTUP":
                 self.startup()
                 rospy.loginfo("Starting up...")
-                with self.lock:
-                    rospy.loginfo(f"Current clue count is {self.clue_count}")
-                    current_state = self.state
-                    current_clue_count = self.clue_count
-                    current_movement_complete = self.movement_complete
-                    current_start_time = self.start_time
-                    current_localize_duration = self.localize_duration
-                    current_front_cam_image = self.front_cam_image
-                    current_right_cam_image = self.right_cam_image
-                    current_left_cam_image = self.left_cam_image
-                    current_back_cam_image = self.back_cam_image
 
             elif self.state == "DRIVING":
                 if current_clue_count == 0:
-                    if self.movement_complete: # Post operation
+                    if current_movement_complete: # Post operation
                         self.ready_pub.publish("READY") # do nothing
-                    else: # Regular operation
+                    elif not self.gts1: # Regular operation
                         self.go_sign1()
-                        current_movement_complete = True
-                        current_start_time = rospy.Time.now()
+                        with self.lock:
+                            self.movement_complete = True
+                            self.start_time = rospy.Time.now()
 
 
                 elif current_clue_count == 1:
@@ -311,21 +336,23 @@ class Driving:
                         self.localize(self.front_cam_image, "FRONT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts2: # Regular operation
                         self.go_sign2()
                         with self.lock:
                             self.movement_complete = True
                             self.start_time = rospy.Time.now()
+                    else:
+                        rospy.loginfo("stuck :(")
 
 
                 elif current_clue_count == 2:
                     if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
-                        rospy.loginfo(f"time difference is {(rospy.Time.now() - current_start_time).to_sec()}")
+                        self.localize(self.right_cam_image, "RIGHT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts3: # Regular operation
                         self.go_sign3()
-                        with self.lock()
+                        with self.lock:
                             self.movement_complete = True
                             self.start_time = rospy.Time.now()
 
@@ -335,7 +362,7 @@ class Driving:
                         self.localize(self.back_cam_image, "BACK")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts4: # Regular operation
                         self.go_sign4()
                         with self.lock:
                             self.movement_complete = True
@@ -347,9 +374,9 @@ class Driving:
                         self.localize(self.front_cam_image, "FRONT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts5: # Regular operation
                         self.go_sign5()
-                        with self.lock()
+                        with self.lock:
                             self.movement_complete = True
                             self.start_time = rospy.Time.now()
 
@@ -359,9 +386,9 @@ class Driving:
                         self.localize(self.right_cam_image, "RIGHT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts6: # Regular operation
                         self.go_sign6()
-                        with self.lock()
+                        with self.lock:
                             self.movement_complete = True
                             self.start_time = rospy.Time.now()
 
@@ -371,7 +398,7 @@ class Driving:
                         self.localize(self.left_cam_image, "LEFT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts7: # Regular operation
                         self.go_sign7()
                         with self.lock:
                             self.movement_complete = True
@@ -383,7 +410,7 @@ class Driving:
                         self.localize(self.left_cam_image, "LEFT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
-                    else: # Regular operation
+                    elif not self.gts8: # Regular operation
                         self.go_tunnel()
                         self.go_sign8()
                         with self.lock:
