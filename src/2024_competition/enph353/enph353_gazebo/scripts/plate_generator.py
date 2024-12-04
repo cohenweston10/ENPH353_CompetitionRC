@@ -32,7 +32,7 @@ def loadCrimesProfileCompetition():
         rows = list(reader)  # Convert the reader object to a list of rows
 
         random_row_index = random.randint(0, 100)
-        #random_row_index = 0
+        random_row_index = 1
 
         # Read a specific row, e.g., the second row (index 1)
         specific_row = rows[random_row_index]  # Adjust the index as needed
