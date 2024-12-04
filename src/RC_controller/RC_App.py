@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.set_custom_graphic(teamRC_path)
 
         # Initialize ROS node
-        #rospy.init_node('camera_feed_gui', anonymous=True)
+        rospy.init_node('camera_feed_gui', anonymous=True)
 
         # Initialize the CvBridge for ROS Image message conversion
         self.bridge = CvBridge()
