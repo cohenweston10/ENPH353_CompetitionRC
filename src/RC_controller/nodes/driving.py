@@ -205,7 +205,7 @@ class Driving:
 
     def go_sign1(self):
         self.move_for_duration(0.42,0.25,0,0,2)
-        self.move_for_duration(0,0,0,0,1.5)
+        self.move_for_duration(0,0,0,0,2)
         self.gts1 = True
 
     def go_sign1r(self):
@@ -285,7 +285,7 @@ class Driving:
         self.move_for_duration(0,-0.5,-0.25,0,2.5)
 
     def go_sign8(self):
-        self.move_for_duration(-1.13,0,2.05,0,1.4)
+        self.move_for_duration(-1.11,0,2.05,0,1.4)
         self.move_for_duration(0,0,0,0,0.55)
         self.move_for_duration(0,1.5,0,0,2.5)
         self.move_for_duration(0,0.005,0,0,0.4)
@@ -295,7 +295,7 @@ class Driving:
         self.move_for_duration(0,-0.005,0,0,0.4)
         self.move_for_duration(0,-1.5,0,0,2.55)
         self.move_for_duration(0,0,0,0,0.5)
-        self.move_for_duration(1.13,0,-2.05,0,1.4)
+        self.move_for_duration(1.11,0,-2.05,0,1.4)
 
 
 
