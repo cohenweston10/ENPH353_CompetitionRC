@@ -407,7 +407,7 @@ class Driving:
 
 
                 elif current_clue_count == 7:
-                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < current_localize_duration: # Post operation
+                    if current_movement_complete and (rospy.Time.now() - current_start_time).to_sec() < 1: # Post operation
                         self.localize(self.left_cam_image, "LEFT")
                     elif current_movement_complete:
                         self.ready_pub.publish("READY")
@@ -419,7 +419,7 @@ class Driving:
                             self.start_time = rospy.Time.now()
 
             elif current_state == "STOP":
-                self.update_velocity(0, 0, 0, 0)
+                self.update_velocity(0, 0, 0.2, 10)
                 with self.lock:
                     self.leaving_prev_clue = True
 

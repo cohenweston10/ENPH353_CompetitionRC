@@ -70,7 +70,7 @@ class CompProtocol:
         self.pub.publish("STOP")
         rospy.loginfo("Published STOP state to /state")
 
-        self.respawn()
+        # self.respawn()
 
 
 if __name__ == '__main__':
