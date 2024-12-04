@@ -2,16 +2,18 @@
 import sys
 import rospy
 from PyQt5 import QtWidgets, QtGui, QtCore, uic
+from PyQt5.QtGui import QPixmap
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
 import os
 import subprocess
+from PyQt5.QtCore import Qt
 
 #define file paths
 ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "RC_App.ui")
 icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
-respawn_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "respawn.py")
+teamRC_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "TeamRC.png")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -26,10 +28,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # Load the UI file
         uic.loadUi(ui_path, self)
 
-        self.respawn_b.clicked.connect(self.respawn_button)
+        self.heading_l.setAlignment(Qt.AlignCenter)  # Center the image in the QLabel
+        self.heading_l.setFrameShape(QtWidgets.QLabel.NoFrame)  # Remove any border/frame
+        self.set_custom_graphic(teamRC_path)
 
         # Initialize ROS node
-        rospy.init_node('camera_feed_gui', anonymous=True)
+        #rospy.init_node('camera_feed_gui', anonymous=True)
 
         # Initialize the CvBridge for ROS Image message conversion
         self.bridge = CvBridge()
@@ -54,12 +58,23 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 rospy.logerr(f"Placeholder not found: {label_name}")
 
-    def respawn_button(self):        
-        # Execute the script
-        try:
-            subprocess.run(["python3", respawn_path], check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e}")
+    def set_custom_graphic(self, image_path):
+        pixmap = QPixmap(image_path)
+
+        # Get the size of the QLabel
+        label_width = self.heading_l.width()
+        label_height = self.heading_l.height()
+
+        # Scale the pixmap to fit within the QLabel while keeping the aspect ratio
+        scaled_pixmap = pixmap.scaled(
+            label_width,
+            label_height,
+            Qt.KeepAspectRatio,  # Maintains aspect ratio
+            Qt.SmoothTransformation  # For smoother scaling
+        )
+
+        # Set the scaled pixmap to the QLabel
+        self.heading_l.setPixmap(scaled_pixmap)
 
     def convert_cv_to_pixmap(self, cv_img):
         """
