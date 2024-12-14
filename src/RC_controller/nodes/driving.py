@@ -31,7 +31,7 @@ class Driving:
 
         self.lock = threading.Lock()
 
-        # Subscribe t        self.leaving_prev_clue = Trueo the State output
+        # Subscribe to the State output
         rospy.Subscriber('/state', String, self.state_callback)
 
         # Subscribe to the Clue Count output
@@ -195,7 +195,7 @@ class Driving:
         self.update_velocity(0, 0, 0, 0)
         rospy.loginfo(f"Movement completed with smooth acceleration and deceleration for {duration} seconds.")
 
-
+    # Define movement functions
     def startup(self):
         self.move_for_duration(0,0,0.20,0,1.5)
 
